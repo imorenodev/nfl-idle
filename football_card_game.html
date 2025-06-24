@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Football Card Strategy Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow-x: hidden;
+        }
+
+        .game-container {
+            width: 400px;
+            height: 700px;
+            background: #f8f9fa;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .field-section {
+            height: 280px;
+            background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
+            position: relative;
+            border-bottom: 3px solid #333;
+        }
+
+        .yards-display {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255,255,255,0.9);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: translateX(-50%) scale(1); }
+            50% { transform: translateX(-50%) scale(1.05); }
+        }
+
+        .field-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: 
+                repeating-linear-gradient(0deg, 
+                    transparent, 
+                    transparent 20px, 
+                    rgba(255,255,255,0.3) 20px, 
+                    rgba(255,255,255,0.3) 22px);
+        }
+
+        .field-zone {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 0 20px;
+        }
+
+        .enemy-zone {
+            top: 0;
+            background: rgba(255,0,0,0.1);
+        }
+
+        .player-zone {
+            bottom: 0;
+            background: rgba(0,0,255,0.1);
+        }
+
+        .field-card {
+            width: 50px;
+            height: 70px;
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: #333;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+
+        .field-card:hover {
+            transform: translateY(-5px) rotateY(10deg);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
+        }
+
+        .field-card.enemy {
+            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+            color: white;
+        }
+
+        .field-card.player {
+            background: linear-gradient(135deg, #4ecdc4, #44a08d);
+            color: white;
+        }
+
+        .hand-section {
+            height: 420px;
+            background: #2c3e50;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hand-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .cards-remaining {
+            background: rgba(255,255,255,0.1);
+            padding: 8px 12px;
+            border-radius: 15px;
+            color: white;
+            font-size: 12px;
+            backdrop-filter: blur(10px);
+        }
+
+        .discard-btn, .play-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 25px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .discard-btn {
+            background: linear-gradient(135deg, #e74c3c, #c0392b);
+            color: white;
+        }
+
+        .discard-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(231,76,60,0.4);
+        }
+
+        .play-btn {
+            background: linear-gradient(135deg, #27ae60, #219a52);
+            color: white;
+        }
+
+        .play-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(39,174,96,0.4);
+        }
+
+        .hand-cards {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            flex: 1;
+        }
+
+        .card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 8px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            transform-style: preserve-3d;
+            border: 2px solid transparent;
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
+            background-size: 400% 400%;
+            border-radius: 12px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            animation: gradientShift 3s ease infinite;
+        }
+
+        @keyframes gradientShift {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        .card:hover::before {
+            opacity: 1;
+        }
+
+        .card:hover {
+            transform: translateY(-8px) rotateX(10deg) rotateY(5deg);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+        }
+
+        .card.selected {
+            transform: translateY(-12px) scale(1.05);
+            border-color: #ffd700;
+            box-shadow: 0 0 20px rgba(255,215,0,0.6);
+        }
+
+        .card.selected::before {
+            opacity: 1;
+        }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .card-cost {
+            width: 20px;
+            height: 20px;
+            background: #f39c12;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .card-rarity {
+            width: 20px;
+            height: 20px;
+            background: #e74c3c;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 60px;
+            background: linear-gradient(45deg, #2c3e50, #3498db);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card-image::after {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            transform: rotate(45deg);
+            transition: all 0.6s ease;
+            opacity: 0;
+        }
+
+        .card:hover .card-image::after {
+            opacity: 1;
+            animation: shine 0.6s ease;
+        }
+
+        .position-badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            background: rgba(255,255,255,0.9);
+            color: #333;
+            font-size: 8px;
+            padding: 2px 4px;
+            border-radius: 4px;
+            font-weight: bold;
+        }
+
+        @keyframes shine {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        .card-name {
+            font-size: 11px;
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .floating-animation {
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .slide-in {
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @keyframes slideIn {
+            from { transform: translateX(-100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .card-enter {
+            animation: cardEnter 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes cardEnter {
+            0% { 
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .field-placement {
+            animation: fieldPlace 0.8s ease-out;
+        }
+
+        @keyframes fieldPlace {
+            0% { 
+                transform: scale(1.5) translateY(-50px);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.2) translateY(-25px);
+                opacity: 0.7;
+            }
+            100% { 
+                transform: scale(1) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes messageFloat {
+            0% { 
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            80% { 
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% { 
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(0.9);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .game-container {
+                width: 100vw;
+                height: 100vh;
+                border-radius: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="field-section">
+            <div class="field-lines"></div>
+            <div class="yards-display">Enemy Yards 0/100</div>
+            
+            <div class="field-zone enemy-zone" id="enemyZone">
+                <!-- Enemy cards will be placed here -->
+            </div>
+            
+            <div class="field-zone player-zone" id="playerZone">
+                <!-- Player cards will be placed here -->
+            </div>
+            
+            <div class="yards-display" style="bottom: 10px; top: auto;">Your Yards 10/100</div>
+        </div>
+        
+        <div class="hand-section">
+            <div class="hand-controls">
+                <button class="discard-btn" id="discardBtn">Discard</button>
+                <div class="cards-remaining">Available 9/15</div>
+                <button class="play-btn" id="playBtn">Play</button>
+            </div>
+            
+            <div class="hand-cards" id="handCards">
+                <!-- Hand cards will be generated here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class GameState {
+            constructor() {
+                this.selectedCards = new Set();
+                this.playerYards = 10;
+                this.enemyYards = 0;
+                this.cardsRemaining = 9; // 15 total - 6 in hand = 9 remaining
+                this.hand = [];
+                this.deck = []; // Remaining cards in deck
+                this.discardPile = []; // Cards that have been discarded/played
+                this.fieldCards = {
+                    player: [],
+                    enemy: []
+                };
+                this.hasDiscardedThisRound = false; // Track if player has discarded this round
+                this.round = 1;
+                this.init();
+            }
+
+            init() {
+                this.generateInitialHand();
+                this.generateEnemyCards();
+                this.setupEventListeners();
+                this.updateUI();
+            }
+
+            generateInitialHand() {
+                const players = [
+                    { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB' },
+                    { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB' },
+                    { name: 'BURROW', cost: 6, rarity: 5, position: 'QB' },
+                    { name: 'HURTS', cost: 5, rarity: 4, position: 'QB' },
+                    { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB' },
+                    { name: 'HENRY', cost: 7, rarity: 5, position: 'RB' },
+                    { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB' },
+                    { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB' },
+                    { name: 'COOK', cost: 4, rarity: 3, position: 'RB' },
+                    { name: 'KUPP', cost: 6, rarity: 5, position: 'WR' },
+                    { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR' },
+                    { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR' },
+                    { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR' },
+                    { name: 'KELCE', cost: 7, rarity: 6, position: 'TE' },
+                    { name: 'WATT', cost: 8, rarity: 6, position: 'DE' }
+                ];
+
+                // Shuffle the deck for variety
+                const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+                
+                // Take first 6 cards for initial hand
+                this.hand = shuffledPlayers.slice(0, 6).map((player, index) => ({
+                    ...player,
+                    id: `hand-${index}`,
+                    element: null
+                }));
+
+                // Store remaining deck
+                this.deck = shuffledPlayers.slice(6);
+                this.cardsRemaining = this.deck.length;
+
+                this.renderHand();
+            }
+
+            generateEnemyCards() {
+                const enemyPlayers = [
+                    { name: 'RODGERS', position: 'QB' },
+                    { name: 'WILSON', position: 'QB' },
+                    { name: 'BARKLEY', position: 'RB' },
+                    { name: 'JONES', position: 'RB' },
+                    { name: 'HILL', position: 'WR' },
+                    { name: 'CHASE', position: 'WR' }
+                ];
+                
+                enemyPlayers.forEach((player, index) => {
+                    this.fieldCards.enemy.push({
+                        name: player.name,
+                        position: player.position,
+                        id: `enemy-${index}`,
+                        element: null
+                    });
+                });
+                this.renderFieldCards();
+            }
+
+            renderHand() {
+                const handContainer = document.getElementById('handCards');
+                handContainer.innerHTML = '';
+
+                this.hand.forEach((card, index) => {
+                    const cardElement = this.createCardElement(card, index);
+                    handContainer.appendChild(cardElement);
+                    card.element = cardElement;
+                    
+                    // Add entrance animation with delay
+                    setTimeout(() => {
+                        cardElement.classList.add('card-enter');
+                    }, index * 100);
+                });
+            }
+
+            createCardElement(card, index) {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = 'card floating-animation';
+                cardDiv.style.animationDelay = `${index * 0.2}s`;
+                cardDiv.dataset.cardId = card.id;
+                
+                cardDiv.innerHTML = `
+                    <div class="card-header">
+                        <div class="card-cost">${card.cost}</div>
+                        <div class="card-rarity">${card.rarity}</div>
+                    </div>
+                    <div class="card-image">
+                        <div class="position-badge">${card.position}</div>
+                        ${card.name}
+                    </div>
+                    <div class="card-name">${card.name}</div>
+                `;
+
+                cardDiv.addEventListener('click', () => this.toggleCardSelection(card.id));
+                return cardDiv;
+            }
+
+            renderFieldCards() {
+                const enemyZone = document.getElementById('enemyZone');
+                const playerZone = document.getElementById('playerZone');
+                
+                enemyZone.innerHTML = '';
+                playerZone.innerHTML = '';
+
+                // Render enemy cards
+                this.fieldCards.enemy.forEach((card, index) => {
+                    const fieldCard = this.createFieldCard(card, 'enemy');
+                    enemyZone.appendChild(fieldCard);
+                    
+                    setTimeout(() => {
+                        fieldCard.classList.add('field-placement');
+                    }, index * 150);
+                });
+
+                // Render player field cards
+                this.fieldCards.player.forEach((card, index) => {
+                    const fieldCard = this.createFieldCard(card, 'player');
+                    playerZone.appendChild(fieldCard);
+                    
+                    setTimeout(() => {
+                        fieldCard.classList.add('field-placement');
+                    }, index * 150);
+                });
+            }
+
+            createFieldCard(card, type) {
+                const fieldCard = document.createElement('div');
+                fieldCard.className = `field-card ${type}`;
+                fieldCard.innerHTML = `
+                    <div style="font-size: 8px; margin-bottom: 2px;">${card.position || ''}</div>
+                    <div>${card.name}</div>
+                `;
+                return fieldCard;
+            }
+
+            toggleCardSelection(cardId) {
+                const card = this.hand.find(c => c.id === cardId);
+                if (!card || !card.element) return;
+
+                if (this.selectedCards.has(cardId)) {
+                    this.selectedCards.delete(cardId);
+                    card.element.classList.remove('selected');
+                } else {
+                    this.selectedCards.add(cardId);
+                    card.element.classList.add('selected');
+                    
+                    // Add selection effect
+                    this.addSelectionEffect(card.element);
+                }
+            }
+
+            addSelectionEffect(element) {
+                element.style.transform = 'translateY(-12px) scale(1.05) rotateY(360deg)';
+                setTimeout(() => {
+                    element.style.transform = 'translateY(-12px) scale(1.05)';
+                }, 600);
+            }
+
+            playSelectedCards() {
+                if (this.selectedCards.size === 0) {
+                    this.showMessage("Select cards to play!");
+                    return;
+                }
+
+                let totalPower = 0;
+                const playedCards = [];
+
+                this.selectedCards.forEach(cardId => {
+                    const cardIndex = this.hand.findIndex(c => c.id === cardId);
+                    if (cardIndex !== -1) {
+                        const card = this.hand[cardIndex];
+                        playedCards.push(cardIndex);
+                        
+                        // Calculate power based on cost and rarity
+                        totalPower += card.cost + card.rarity;
+                        
+                        // Add played card to discard pile
+                        this.discardPile.push({
+                            name: card.name,
+                            cost: card.cost,
+                            rarity: card.rarity,
+                            position: card.position
+                        });
+                        
+                        // Add to field
+                        this.fieldCards.player.push({
+                            name: card.name,
+                            position: card.position,
+                            id: `field-${Date.now()}-${Math.random()}`,
+                            element: null
+                        });
+                        
+                        // Remove from hand with animation
+                        if (card.element) {
+                            card.element.style.transform = 'scale(0) rotate(180deg)';
+                            card.element.style.opacity = '0';
+                        }
+                    }
+                });
+
+                // Sort indices in reverse order to remove from end first
+                playedCards.sort((a, b) => b - a);
+                
+                setTimeout(() => {
+                    playedCards.forEach(cardIndex => {
+                        this.hand.splice(cardIndex, 1);
+                    });
+                    
+                    // Discard all remaining cards in hand
+                    this.discardRemainingHand();
+                    
+                    this.renderFieldCards();
+                    this.endRound(totalPower);
+                }, 300);
+
+                this.selectedCards.clear();
+            }
+
+            discardSelected() {
+                if (this.selectedCards.size === 0) {
+                    this.showMessage("Select cards to discard!");
+                    return;
+                }
+
+                if (this.hasDiscardedThisRound) {
+                    this.showMessage("You can only discard once per round!");
+                    return;
+                }
+
+                const discardCount = this.selectedCards.size;
+                const cardsToDiscard = [];
+
+                // Collect cards to discard and add to discard pile
+                this.selectedCards.forEach(cardId => {
+                    const cardIndex = this.hand.findIndex(c => c.id === cardId);
+                    if (cardIndex !== -1) {
+                        const card = this.hand[cardIndex];
+                        // Remove position and element data for discard pile
+                        this.discardPile.push({
+                            name: card.name,
+                            cost: card.cost,
+                            rarity: card.rarity,
+                            position: card.position
+                        });
+                        cardsToDiscard.push(cardIndex);
+                    }
+                });
+
+                // Sort indices in reverse order to remove from end first
+                cardsToDiscard.sort((a, b) => b - a);
+
+                // Remove cards with animation
+                cardsToDiscard.forEach((cardIndex, i) => {
+                    const card = this.hand[cardIndex];
+                    if (card.element) {
+                        card.element.style.transform = 'translateX(-200px) rotate(-90deg)';
+                        card.element.style.opacity = '0';
+                        
+                        setTimeout(() => {
+                            this.hand.splice(cardIndex, 1);
+                            
+                            // After last card is removed, draw new cards
+                            if (i === cardsToDiscard.length - 1) {
+                                this.drawCards(discardCount);
+                                this.renderHand();
+                            }
+                        }, 300);
+                    }
+                });
+
+                this.selectedCards.clear();
+                this.hasDiscardedThisRound = true;
+                this.updateUI();
+                this.showMessage(`Discarded ${discardCount} cards, drew ${Math.min(discardCount, this.deck.length)} new cards`);
+            }
+
+            clearField() {
+                // Add all player field cards to discard pile
+                this.fieldCards.player.forEach(card => {
+                    // Find the original card data from the field card
+                    this.discardPile.push({
+                        name: card.name,
+                        cost: this.getCardCostByName(card.name),
+                        rarity: this.getCardRarityByName(card.name),
+                        position: card.position
+                    });
+                });
+                
+                // Clear field arrays
+                this.fieldCards.player = [];
+                this.fieldCards.enemy = [];
+                
+                // Re-render empty field
+                this.renderFieldCards();
+                
+                this.showMessage("⚡ Field cleared! Cards added to discard pile");
+            }
+
+            getCardCostByName(name) {
+                const cardData = {
+                    'MAHOMES': 8, 'ALLEN': 7, 'BURROW': 6, 'HURTS': 5, 'LAMAR': 6,
+                    'MCCAFFREY': 8, 'HENRY': 7, 'CHUBB': 5, 'COOK': 4,
+                    'JEFFERSON': 7, 'KUPP': 6, 'ADAMS': 6, 'DIGGS': 5,
+                    'KELCE': 7, 'WATT': 8
+                };
+                return cardData[name] || 5;
+            }
+
+            getCardRarityByName(name) {
+                const cardData = {
+                    'MAHOMES': 6, 'ALLEN': 6, 'BURROW': 5, 'HURTS': 4, 'LAMAR': 5,
+                    'MCCAFFREY': 6, 'HENRY': 5, 'CHUBB': 4, 'COOK': 3,
+                    'JEFFERSON': 6, 'KUPP': 5, 'ADAMS': 5, 'DIGGS': 4,
+                    'KELCE': 6, 'WATT': 6
+                };
+                return cardData[name] || 4;
+            }
+
+            discardRemainingHand() {
+                // Add remaining hand cards to discard pile
+                this.hand.forEach(card => {
+                    this.discardPile.push({
+                        name: card.name,
+                        cost: card.cost,
+                        rarity: card.rarity,
+                        position: card.position
+                    });
+                });
+                
+                // Clear hand
+                this.hand = [];
+            }
+
+            drawCards(count) {
+                const cardsToDraw = Math.min(count, this.getAvailableCards());
+                
+                for (let i = 0; i < cardsToDraw; i++) {
+                    // Check if we need to shuffle discard pile into deck
+                    if (this.deck.length === 0 && this.discardPile.length > 0) {
+                        this.shuffleDiscardIntoDeck();
+                    }
+                    
+                    const newCard = this.deck.shift();
+                    if (newCard) {
+                        newCard.id = `hand-${Date.now()}-${Math.random()}`;
+                        this.hand.push(newCard);
+                    }
+                }
+                
+                this.cardsRemaining = this.deck.length;
+            }
+
+            shuffleDiscardIntoDeck() {
+                // Shuffle discard pile
+                const shuffled = [...this.discardPile].sort(() => Math.random() - 0.5);
+                
+                // Add to deck
+                this.deck.push(...shuffled);
+                
+                // Clear discard pile
+                this.discardPile = [];
+                
+                this.showMessage("🔄 Deck reshuffled from discard pile!");
+            }
+
+            getAvailableCards() {
+                return this.deck.length + this.discardPile.length;
+            }
+
+            endRound(playerPower) {
+                // Calculate enemy power (simplified AI)
+                const enemyPower = Math.floor(Math.random() * 20) + 10;
+                
+                // Calculate yard gains
+                const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
+                const enemyGain = Math.max(0, Math.floor((enemyPower - playerPower) / 2));
+                
+                this.playerYards += playerGain;
+                this.enemyYards += enemyGain;
+                
+                // Ensure yards don't exceed 100
+                this.playerYards = Math.min(100, this.playerYards);
+                this.enemyYards = Math.min(100, this.enemyYards);
+                
+                this.updateUI();
+                this.showMessage(`Round ${this.round} Complete! You: +${playerGain} yards, Enemy: +${enemyGain} yards`);
+                
+                // Clear the field after a delay and add field cards to discard pile
+                setTimeout(() => {
+                    this.clearField();
+                    
+                    // Reset round state
+                    this.hasDiscardedThisRound = false;
+                    this.round++;
+                    
+                    // Draw new hand of 6 cards
+                    this.drawCards(6);
+                    this.renderHand();
+                    this.updateUI();
+                }, 1500);
+                
+                // Check win conditions
+                if (this.playerYards >= 100) {
+                    setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 2000);
+                } else if (this.enemyYards >= 100) {
+                    setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 2000);
+                }
+            }
+
+            showMessage(text) {
+                // Create floating message
+                const message = document.createElement('div');
+                message.className = 'game-message';
+                message.textContent = text;
+                message.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0,0,0,0.9);
+                    color: white;
+                    padding: 15px 25px;
+                    border-radius: 25px;
+                    font-weight: bold;
+                    z-index: 1000;
+                    animation: messageFloat 3s ease-out forwards;
+                `;
+                
+                document.body.appendChild(message);
+                
+                setTimeout(() => {
+                    if (message.parentNode) {
+                        message.parentNode.removeChild(message);
+                    }
+                }, 3000);
+            }
+
+            updateUI() {
+                document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
+                document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
+                
+                // Show available cards (deck + discard pile)
+                const totalAvailable = this.getAvailableCards();
+                document.querySelector('.cards-remaining').textContent = `Available ${totalAvailable}/15`;
+                
+                // Update button states
+                const discardBtn = document.getElementById('discardBtn');
+                if (this.hasDiscardedThisRound) {
+                    discardBtn.style.opacity = '0.5';
+                    discardBtn.style.cursor = 'not-allowed';
+                } else {
+                    discardBtn.style.opacity = '1';
+                    discardBtn.style.cursor = 'pointer';
+                }
+            }
+
+            setupEventListeners() {
+                document.getElementById('playBtn').addEventListener('click', () => {
+                    this.playSelectedCards();
+                });
+
+                document.getElementById('discardBtn').addEventListener('click', () => {
+                    this.discardSelected();
+                });
+            }
+        }
+
+        // Initialize game when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new GameState();
+        });
+
+        // Add some interactive field effects
+        document.addEventListener('DOMContentLoaded', () => {
+            const fieldSection = document.querySelector('.field-section');
+            
+            fieldSection.addEventListener('mousemove', (e) => {
+                const rect = fieldSection.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                
+                fieldSection.style.background = `
+                    radial-gradient(circle at ${x}px ${y}px, 
+                        rgba(255,255,255,0.1) 0%, 
+                        transparent 50%), 
+                    linear-gradient(180deg, #4CAF50 0%, #45a049 100%)
+                `;
+            });
+            
+            fieldSection.addEventListener('mouseleave', () => {
+                fieldSection.style.background = 'linear-gradient(180deg, #4CAF50 0%, #45a049 100%)';
+            });
+        });
+    </script>
+</body>
+</html>
