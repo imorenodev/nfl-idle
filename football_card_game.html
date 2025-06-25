@@ -401,6 +401,18 @@
             }
         }
 
+        .enemy-deck-info {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: rgba(255,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 10px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
         @media (max-width: 480px) {
             .game-container {
                 width: 100vw;
@@ -415,6 +427,7 @@
         <div class="field-section">
             <div class="field-lines"></div>
             <div class="yards-display">Enemy Yards 0/100</div>
+            <div class="enemy-deck-info" id="enemyDeckInfo">Enemy: 9/15</div>
             
             <div class="field-zone enemy-zone" id="enemyZone">
                 <!-- Enemy cards will be placed here -->
@@ -446,28 +459,8 @@
                 this.selectedCards = new Set();
                 this.playerYards = 10;
                 this.enemyYards = 0;
-                this.cardsRemaining = 9; // 15 total - 6 in hand = 9 remaining
-                this.hand = [];
-                this.deck = []; // Remaining cards in deck
-                this.discardPile = []; // Cards that have been discarded/played
-                this.fieldCards = {
-                    player: [],
-                    enemy: []
-                };
-                this.hasDiscardedThisRound = false; // Track if player has discarded this round
-                this.round = 1;
-                this.init();
-            }
 
-            init() {
-                this.generateInitialHand();
-                this.generateEnemyCards();
-                this.setupEventListeners();
-                this.updateUI();
-            }
-
-            generateInitialHand() {
-                const players = [
+                this.playerDeck = [
                     { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB' },
                     { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB' },
                     { name: 'BURROW', cost: 6, rarity: 5, position: 'QB' },
@@ -484,50 +477,146 @@
                     { name: 'KELCE', cost: 7, rarity: 6, position: 'TE' },
                     { name: 'WATT', cost: 8, rarity: 6, position: 'DE' }
                 ];
+                this.playerHand = [];
+                this.playerDrawPile = []; // Remaining cards in deck
+                this.playerDiscardPile = []; // Cards that have been discarded/played
 
-                // Shuffle the deck for variety
-                const shuffledPlayers = [...players].sort(() => Math.random() - 0.5);
+                this.fieldCards = {
+                    player: [],
+                    enemy: []
+                };
+                this.hasDiscardedThisRound = false; // Track if player has discarded this round
+                this.round = 1;
                 
-                // Take first 6 cards for initial hand
-                this.hand = shuffledPlayers.slice(0, 6).map((player, index) => ({
-                    ...player,
-                    id: `hand-${index}`,
-                    element: null
-                }));
+                // Enemy deck management
+                this.enemyDeck = [
+                    { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB' },
+                    { name: 'WILSON', cost: 6, rarity: 4, position: 'QB' },
+                    { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB' },
+                    { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB' },
+                    { name: 'JONES', cost: 4, rarity: 3, position: 'QB' },
+                    { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB' },
+                    { name: 'JONES II', cost: 6, rarity: 4, position: 'RB' },
+                    { name: 'MIXON', cost: 5, rarity: 4, position: 'RB' },
+                    { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB' },
+                    { name: 'HILL', cost: 7, rarity: 6, position: 'WR' },
+                    { name: 'CHASE', cost: 6, rarity: 5, position: 'WR' },
+                    { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR' },
+                    { name: 'EVANS', cost: 5, rarity: 4, position: 'WR' },
+                    { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE' },
+                    { name: 'DONALD', cost: 8, rarity: 6, position: 'DT' }
+                ];
 
-                // Store remaining deck
-                this.deck = shuffledPlayers.slice(6);
-                this.cardsRemaining = this.deck.length;
-
-                this.renderHand();
+                this.enemyHand = [];
+                this.enemyDrawPile = [];
+                this.enemyDiscardPile = [];
+                
+                this.init();
             }
 
-            generateEnemyCards() {
-                const enemyPlayers = [
-                    { name: 'RODGERS', position: 'QB' },
-                    { name: 'WILSON', position: 'QB' },
-                    { name: 'BARKLEY', position: 'RB' },
-                    { name: 'JONES', position: 'RB' },
-                    { name: 'HILL', position: 'WR' },
-                    { name: 'CHASE', position: 'WR' }
-                ];
+            init() {
+                this.generateInitialHand();
+                this.generateEnemyDeck();
+                this.setupEventListeners();
                 
-                enemyPlayers.forEach((player, index) => {
+                // Start the first round (this will draw cards and have enemy play)
+                this.startNewRound();
+                this.updateUI();
+            }
+
+            generateInitialHand() {
+                // Shuffle the deck for variety
+                const shuffledPlayers = [...this.playerDeck].sort(() => Math.random() - 0.5);
+                
+                // Store the full deck (don't draw initial hand here)
+                this.playerDrawPile = shuffledPlayers.map((player, index) => ({
+                    ...player,
+                    id: `deck-${index}`,
+                    element: null
+                }));
+            }
+
+            generateEnemyDeck() {
+                // Shuffle enemy deck
+                const shuffledEnemyPlayers = [...this.enemyDeck].sort(() => Math.random() - 0.5);
+                
+                // Store the full enemy deck (don't draw initial hand here)
+                this.enemyDrawPile = shuffledEnemyPlayers.map((player, index) => ({
+                    ...player,
+                    id: `enemy-deck-${index}`
+                }));
+            }
+
+            generateEnemyHand() {
+                // Enemy hand is already generated in generateEnemyDeck
+                // This method can be used for re-drawing enemy hand
+            }
+
+            playEnemyCards() {
+                if (this.enemyHand.length === 0) return 0;
+
+                const cardsToPlay = this.enemyHand.length;
+                let totalEnemyPower = 0;
+
+                // Play all enemy cards
+                this.enemyHand.forEach(card => {
+                    // Calculate power
+                    totalEnemyPower += card.cost + card.rarity;
+                    
+                    // Add to enemy field
                     this.fieldCards.enemy.push({
-                        name: player.name,
-                        position: player.position,
-                        id: `enemy-${index}`,
+                        name: card.name,
+                        position: card.position,
+                        cost: card.cost,    // Store cost and rarity
+                        rarity: card.rarity,
+                        id: `enemy-field-${Date.now()}-${Math.random()}`,
                         element: null
                     });
                 });
-                this.renderFieldCards();
+
+                // Clear enemy hand (all cards played)
+                this.enemyHand = [];
+
+                return totalEnemyPower;
+            }
+
+            drawEnemyCards(count) {
+                const cardsToDraw = Math.min(count, this.getNumberOfCardsInEnemyDrawPile());
+                
+                for (let i = 0; i < cardsToDraw; i++) {
+                    // Check if we need to shuffle enemy discard pile into deck
+                    if (this.getNumberOfCardsInEnemyDrawPile() === 0 && this.getNumberOfCardsInEnemyDiscardPile() > 0) {
+                        this.shuffleEnemyDiscardIntoDeck();
+                    }
+                    
+                    const newCard = this.enemyDrawPile.shift();
+                    if (newCard) {
+                        newCard.id = `enemy-hand-${Date.now()}-${Math.random()}`;
+                        this.enemyHand.push(newCard);
+                    }
+                }
+                
+                this.enemyCardsRemaining = this.getNumberOfCardsInEnemyDrawPile();
+            }
+
+            shuffleEnemyDiscardIntoDeck() {
+                // Shuffle enemy discard pile
+                const shuffled = [...this.enemyDiscardPile].sort(() => Math.random() - 0.5);
+                
+                // Add to enemy deck
+                this.enemyDrawPile.push(...shuffled);
+                
+                // Clear enemy discard pile
+                this.enemyDiscardPile = [];
+                
+                this.showMessage("🔄 Enemy deck reshuffled!");
             }
 
             renderHand() {
                 const handContainer = document.getElementById('handCards');
                 handContainer.innerHTML = '';
 
-                this.hand.forEach((card, index) => {
+                this.playerHand.forEach((card, index) => {
                     const cardElement = this.createCardElement(card, index);
                     handContainer.appendChild(cardElement);
                     card.element = cardElement;
@@ -600,7 +689,7 @@
             }
 
             toggleCardSelection(cardId) {
-                const card = this.hand.find(c => c.id === cardId);
+                const card = this.playerHand.find(c => c.id === cardId);
                 if (!card || !card.element) return;
 
                 if (this.selectedCards.has(cardId)) {
@@ -632,26 +721,20 @@
                 const playedCards = [];
 
                 this.selectedCards.forEach(cardId => {
-                    const cardIndex = this.hand.findIndex(c => c.id === cardId);
+                    const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
                     if (cardIndex !== -1) {
-                        const card = this.hand[cardIndex];
+                        const card = this.playerHand[cardIndex];
                         playedCards.push(cardIndex);
                         
                         // Calculate power based on cost and rarity
                         totalPower += card.cost + card.rarity;
-                        
-                        // Add played card to discard pile
-                        this.discardPile.push({
-                            name: card.name,
-                            cost: card.cost,
-                            rarity: card.rarity,
-                            position: card.position
-                        });
-                        
+
                         // Add to field
                         this.fieldCards.player.push({
                             name: card.name,
                             position: card.position,
+                            cost: card.cost,     // Store cost and rarity directly
+                            rarity: card.rarity,  // to avoid looking it up later
                             id: `field-${Date.now()}-${Math.random()}`,
                             element: null
                         });
@@ -669,7 +752,7 @@
                 
                 setTimeout(() => {
                     playedCards.forEach(cardIndex => {
-                        this.hand.splice(cardIndex, 1);
+                        this.playerHand.splice(cardIndex, 1);
                     });
                     
                     // Discard all remaining cards in hand
@@ -698,11 +781,11 @@
 
                 // Collect cards to discard and add to discard pile
                 this.selectedCards.forEach(cardId => {
-                    const cardIndex = this.hand.findIndex(c => c.id === cardId);
+                    const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
                     if (cardIndex !== -1) {
-                        const card = this.hand[cardIndex];
+                        const card = this.playerHand[cardIndex];
                         // Remove position and element data for discard pile
-                        this.discardPile.push({
+                        this.playerDiscardPile.push({
                             name: card.name,
                             cost: card.cost,
                             rarity: card.rarity,
@@ -717,13 +800,13 @@
 
                 // Remove cards with animation
                 cardsToDiscard.forEach((cardIndex, i) => {
-                    const card = this.hand[cardIndex];
+                    const card = this.playerHand[cardIndex];
                     if (card.element) {
                         card.element.style.transform = 'translateX(-200px) rotate(-90deg)';
                         card.element.style.opacity = '0';
                         
                         setTimeout(() => {
-                            this.hand.splice(cardIndex, 1);
+                            this.playerHand.splice(cardIndex, 1);
                             
                             // After last card is removed, draw new cards
                             if (i === cardsToDiscard.length - 1) {
@@ -737,17 +820,26 @@
                 this.selectedCards.clear();
                 this.hasDiscardedThisRound = true;
                 this.updateUI();
-                this.showMessage(`Discarded ${discardCount} cards, drew ${Math.min(discardCount, this.deck.length)} new cards`);
+                this.showMessage(`Discarded ${discardCount} cards, drew ${Math.min(discardCount, this.getNumberOfCardsInPlayerDrawPile())} new cards`);
             }
 
             clearField() {
                 // Add all player field cards to discard pile
                 this.fieldCards.player.forEach(card => {
-                    // Find the original card data from the field card
-                    this.discardPile.push({
+                    this.playerDiscardPile.push({
                         name: card.name,
-                        cost: this.getCardCostByName(card.name),
-                        rarity: this.getCardRarityByName(card.name),
+                        cost: card.cost,
+                        rarity: card.rarity,
+                        position: card.position
+                    });
+                });
+
+                // Add all enemy field cards to enemy discard pile
+                this.fieldCards.enemy.forEach(card => {
+                    this.enemyDiscardPile.push({
+                        name: card.name,
+                        cost: card.cost,
+                        rarity: card.rarity,
                         position: card.position
                     });
                 });
@@ -759,7 +851,7 @@
                 // Re-render empty field
                 this.renderFieldCards();
                 
-                this.showMessage("⚡ Field cleared! Cards added to discard pile");
+                this.showMessage("⚡ Field cleared! Cards added to discard piles");
             }
 
             getCardCostByName(name) {
@@ -782,10 +874,30 @@
                 return cardData[name] || 4;
             }
 
+            getEnemyCardCostByName(name) {
+                const cardData = {
+                    'RODGERS': 7, 'WILSON': 6, 'PRESCOTT': 5, 'STAFFORD': 5, 'JONES': 4,
+                    'BARKLEY': 7, 'JONES II': 6, 'MIXON': 5, 'HARRIS': 4,
+                    'HILL': 7, 'CHASE': 6, 'HOPKINS': 5, 'EVANS': 5,
+                    'KITTLE': 6, 'DONALD': 8
+                };
+                return cardData[name] || 5;
+            }
+
+            getEnemyCardRarityByName(name) {
+                const cardData = {
+                    'RODGERS': 5, 'WILSON': 4, 'PRESCOTT': 4, 'STAFFORD': 3, 'JONES': 3,
+                    'BARKLEY': 5, 'JONES II': 4, 'MIXON': 4, 'HARRIS': 3,
+                    'HILL': 6, 'CHASE': 5, 'HOPKINS': 4, 'EVANS': 4,
+                    'KITTLE': 5, 'DONALD': 6
+                };
+                return cardData[name] || 4;
+            }
+
             discardRemainingHand() {
                 // Add remaining hand cards to discard pile
-                this.hand.forEach(card => {
-                    this.discardPile.push({
+                this.playerHand.forEach(card => {
+                    this.playerDiscardPile.push({
                         name: card.name,
                         cost: card.cost,
                         rarity: card.rarity,
@@ -794,48 +906,64 @@
                 });
                 
                 // Clear hand
-                this.hand = [];
+                this.playerHand = [];
             }
 
             drawCards(count) {
-                const cardsToDraw = Math.min(count, this.getAvailableCards());
+                const cardsToDraw = Math.min(count, this.getNumberOfCardsInPlayerDrawPile());
                 
                 for (let i = 0; i < cardsToDraw; i++) {
                     // Check if we need to shuffle discard pile into deck
-                    if (this.deck.length === 0 && this.discardPile.length > 0) {
+                    if (this.getNumberOfCardsInPlayerDrawPile() === 0 && this.playerDiscardPile.length > 0) {
                         this.shuffleDiscardIntoDeck();
                     }
                     
-                    const newCard = this.deck.shift();
+                    const newCard = this.playerDrawPile.shift();
                     if (newCard) {
                         newCard.id = `hand-${Date.now()}-${Math.random()}`;
-                        this.hand.push(newCard);
+                        this.playerHand.push(newCard);
                     }
                 }
                 
-                this.cardsRemaining = this.deck.length;
+                this.cardsRemaining = this.getNumberOfCardsInPlayerDrawPile();
+                this.updateUI();
             }
 
             shuffleDiscardIntoDeck() {
                 // Shuffle discard pile
-                const shuffled = [...this.discardPile].sort(() => Math.random() - 0.5);
+                const shuffled = [...this.playerDiscardPile].sort(() => Math.random() - 0.5);
                 
                 // Add to deck
-                this.deck.push(...shuffled);
+                this.playerDrawPile.push(...shuffled);
                 
                 // Clear discard pile
-                this.discardPile = [];
+                this.playerDiscardPile = [];
                 
                 this.showMessage("🔄 Deck reshuffled from discard pile!");
             }
 
-            getAvailableCards() {
-                return this.deck.length + this.discardPile.length;
+            getNumberOfCardsInPlayerDrawPile() {
+                return this.playerDrawPile.length;
+            }
+
+            getNumberOfCardsInPlayerDiscardPile() {
+                return this.playerDiscardPile.length;
+            }
+
+            getNumberOfCardsInEnemyDrawPile() {
+                return this.enemyDrawPile.length;
+            }
+
+            getNumberOfCardsInEnemyDiscardPile() {
+                return this.enemyDiscardPile.length;
             }
 
             endRound(playerPower) {
-                // Calculate enemy power (simplified AI)
-                const enemyPower = Math.floor(Math.random() * 20) + 10;
+                // Calculate enemy power from their field cards (they were already played at round start)
+                let enemyPower = 0;
+                this.fieldCards.enemy.forEach(card => {
+                    enemyPower += (card.cost || 0) + (card.rarity || 0);
+                });
                 
                 // Calculate yard gains
                 const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
@@ -849,7 +977,7 @@
                 this.enemyYards = Math.min(100, this.enemyYards);
                 
                 this.updateUI();
-                this.showMessage(`Round ${this.round} Complete! You: +${playerGain} yards, Enemy: +${enemyGain} yards`);
+                this.showMessage(`Round ${this.round} Complete! You: ${playerPower} power (+${playerGain} yards), Enemy: ${enemyPower} power (+${enemyGain} yards)`);
                 
                 // Clear the field after a delay and add field cards to discard pile
                 setTimeout(() => {
@@ -859,18 +987,35 @@
                     this.hasDiscardedThisRound = false;
                     this.round++;
                     
-                    // Draw new hand of 6 cards
-                    this.drawCards(6);
-                    this.renderHand();
-                    this.updateUI();
-                }, 1500);
+                    // Start new round
+                    this.startNewRound();
+                }, 2500);
                 
                 // Check win conditions
                 if (this.playerYards >= 100) {
-                    setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 2000);
+                    setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 3000);
                 } else if (this.enemyYards >= 100) {
-                    setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 2000);
+                    setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 3000);
                 }
+            }
+
+            startNewRound() {
+                // Draw new hands for both players
+                this.drawCards(6);
+                this.drawEnemyCards(6);
+                
+                // Enemy plays their cards first so player can see them
+                const enemyPower = this.playEnemyCards();
+                
+                // Render enemy cards immediately
+                this.renderFieldCards();
+                
+                // Draw player hand after enemy has played
+                this.renderHand();
+                this.updateUI();
+                
+                // Show round start message
+                this.showMessage(`Round ${this.round} starts! Enemy played cards for ${enemyPower} power. Your turn!`);
             }
 
             showMessage(text) {
@@ -905,9 +1050,9 @@
                 document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
                 document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
                 
-                // Show available cards (deck + discard pile)
-                const totalAvailable = this.getAvailableCards();
-                document.querySelector('.cards-remaining').textContent = `Available ${totalAvailable}/15`;
+                document.querySelector('.cards-remaining').textContent = `Available ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
+
+                document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
                 
                 // Update button states
                 const discardBtn = document.getElementById('discardBtn');
@@ -948,7 +1093,7 @@
                 fieldSection.style.background = `
                     radial-gradient(circle at ${x}px ${y}px, 
                         rgba(255,255,255,0.1) 0%, 
-                        transparent 50%), 
+                        transparent 51%), 
                     linear-gradient(180deg, #4CAF50 0%, #45a049 100%)
                 `;
             });
