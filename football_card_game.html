@@ -581,18 +581,19 @@
             }
 
             drawEnemyCards(count) {
-                const cardsToDraw = Math.min(count, this.getNumberOfCardsInEnemyDrawPile());
+                const cardsToDraw = count;
                 
                 for (let i = 0; i < cardsToDraw; i++) {
-                    // Check if we need to shuffle enemy discard pile into deck
-                    if (this.getNumberOfCardsInEnemyDrawPile() === 0 && this.getNumberOfCardsInEnemyDiscardPile() > 0) {
-                        this.shuffleEnemyDiscardIntoDeck();
-                    }
-                    
+
                     const newCard = this.enemyDrawPile.shift();
                     if (newCard) {
                         newCard.id = `enemy-hand-${Date.now()}-${Math.random()}`;
                         this.enemyHand.push(newCard);
+                    }
+
+                    // Check if we need to shuffle enemy discard pile into deck
+                    if (this.getNumberOfCardsInEnemyDrawPile() === 0 && this.getNumberOfCardsInEnemyDiscardPile() > 0) {
+                        this.shuffleEnemyDiscardIntoDeck();
                     }
                 }
                 
@@ -810,7 +811,7 @@
                             
                             // After last card is removed, draw new cards
                             if (i === cardsToDiscard.length - 1) {
-                                this.drawCards(discardCount);
+                                this.drawPlayerCards(discardCount);
                                 this.renderHand();
                             }
                         }, 300);
@@ -909,19 +910,20 @@
                 this.playerHand = [];
             }
 
-            drawCards(count) {
-                const cardsToDraw = Math.min(count, this.getNumberOfCardsInPlayerDrawPile());
+            drawPlayerCards(count) {
+                const cardsToDraw = count;
                 
                 for (let i = 0; i < cardsToDraw; i++) {
-                    // Check if we need to shuffle discard pile into deck
-                    if (this.getNumberOfCardsInPlayerDrawPile() === 0 && this.playerDiscardPile.length > 0) {
-                        this.shuffleDiscardIntoDeck();
-                    }
                     
                     const newCard = this.playerDrawPile.shift();
                     if (newCard) {
                         newCard.id = `hand-${Date.now()}-${Math.random()}`;
                         this.playerHand.push(newCard);
+                    }
+
+                    // Check if we need to shuffle discard pile into deck
+                    if (this.getNumberOfCardsInPlayerDrawPile() === 0 && this.getNumberOfCardsInPlayerDiscardPile() > 0) {
+                        this.shuffleDiscardIntoDeck();
                     }
                 }
                 
@@ -1001,7 +1003,7 @@
 
             startNewRound() {
                 // Draw new hands for both players
-                this.drawCards(6);
+                this.drawPlayerCards(6);
                 this.drawEnemyCards(6);
                 
                 // Enemy plays their cards first so player can see them
