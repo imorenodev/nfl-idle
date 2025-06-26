@@ -1053,9 +1053,9 @@
                 document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
                 document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
                 
-                document.querySelector('.cards-remaining').textContent = `🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
+                document.querySelector('.cards-remaining').textContent = `Draw Pile 🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
 
-                document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
+                document.getElementById('enemyDeckInfo').textContent = `Enemy: 🂡 ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
                 
                 // Update button states
                 const discardBtn = document.getElementById('discardBtn');
