@@ -18,7 +18,7 @@
             --vh: 1vh;
             --game-width: min(400px, 100vw);
             --game-height: calc(var(--vh, 1vh) * 100);
-            --field-height: min(280px, 40vh);
+            --field-height: min(290px, 40vh);
             --hand-height: calc(var(--game-height) - var(--field-height));
         }
 
@@ -94,7 +94,7 @@
         }
 
         .enemy-zone {
-            top: 2.5rem;
+            top: 2.75rem;
             background: rgba(255,0,0,0.1);
         }
 
@@ -141,7 +141,7 @@
             flex: 1;
             min-height: 0;
             background: #2c3e50;
-            padding: min(20px, 3vh) min(20px, 4vw);
+            padding: min(5px, 3vh) min(20px, 4vw);
             display: flex;
             flex-direction: column;
         }
@@ -150,7 +150,7 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: min(20px, 3vh);
+            margin-bottom: min(30px, 3vh);
             flex-shrink: 0;
         }
 
@@ -202,7 +202,6 @@
             flex: 1;
             min-height: 0;
             align-content: start;
-            overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
