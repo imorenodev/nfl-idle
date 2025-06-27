@@ -825,12 +825,17 @@
             }
         }
 
+        const container = document.getElementById('game-container');
+        
         // Game configuration
         const gameConfig = {
             type: Phaser.AUTO,
             parent: 'game-container',
-            width: 400,
-            height: 700,
+            width: container.clientWidth,
+            height: container.clientHeight,
+            resolution: window.devicePixelRatio || 1,
+            pixelArt: false,
+            antialias: true,
             backgroundColor: '#f8f9fa',
             scale: {
                 mode: Phaser.Scale.FIT,
@@ -839,39 +844,33 @@
             scene: FootballCardGame
         };
 
-        // Handle mobile viewport
-        function updateViewport() {
-
-            const vh = window.innerHeight * 0.01;
-            document.documentElement.style.setProperty('--vh', `${vh}px`);
-            
-            // Update game size for mobile
-            if (window.innerWidth <= 768) {
-                gameConfig.width = Math.max(window.innerWidth, 420);
-                gameConfig.height = window.innerHeight;
-            }
-        }
-
-        updateViewport();
-        window.addEventListener('resize', updateViewport);
-        window.addEventListener('orientationchange', () => {
-            setTimeout(updateViewport, 100);
-        });
-
         // Create game
         let game;
         
+        const startGame = () => {
+            // Get the container dimensions again in case of resize before start
+            gameConfig.width = container.clientWidth;
+            gameConfig.height = container.clientHeight;
+            game = new Phaser.Game(gameConfig);
+        };
+
         // Wait for DOM to be ready
         if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                console.log('DOM loaded, creating game...');
-                game = new Phaser.Game(gameConfig);
-            });
+            document.addEventListener('DOMContentLoaded', startGame);
         } else {
-            console.log('Creating game immediately...');
-            game = new Phaser.Game(gameConfig);
+            startGame();
         }
 
+        // Optional: Handle window resizing to adjust the game
+        window.addEventListener('resize', () => {
+            if (game) {
+                // Use a small timeout to avoid spamming resize events
+                setTimeout(() => {
+                    game.scale.resize(container.clientWidth, container.clientHeight);
+                }, 100);
+            }
+        });
+        
         // Debug - check if Phaser loaded
         console.log('Phaser version:', Phaser.VERSION);
     </script>
