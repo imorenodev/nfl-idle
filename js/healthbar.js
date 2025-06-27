@@ -1,4 +1,20 @@
 // healthbar.js - Reusable HealthBar Component
+
+/**
+    // Basic usage
+    const healthBar = new HealthBarComponent('#container', {
+    name: 'Player Name',
+    initialValue: 75,
+    backgroundImage: 'path/to/your/image.jpg'
+    });
+
+    // Control the health bar
+    healthBar.add(25);           // Heal by 25%
+    healthBar.remove(10);        // Damage by 10%
+    healthBar.setHealth(50);     // Set to specific health
+    healthBar.getCurrentHealth(); // Get current health value
+    healthBar.isDead();          // Check if player is dead
+ */
 class HealthBarComponent {
     constructor(container, options = {}) {
         this.container = typeof container === 'string' ? document.querySelector(container) : container;
@@ -187,7 +203,7 @@ class HealthBar {
             }
             
             if (t <= duration) {
-                this.requestAnimationFrame(animate);
+                window.requestAnimationFrame(animate);
             } else {
                 this.setBar(isHealing ? sStart + amount : sStart - amount);
                 delta.classList.add('fadeout');
