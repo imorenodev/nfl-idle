@@ -548,12 +548,16 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="styles/healthbar.css">
 </head>
 <body>
     <div class="game-container">
         <div class="field-section">
             <div class="field-lines"></div>
+
             <div class="yards-display">Enemy Yards 0/100</div>
+            <div id="enemy-yards-bar" class="healthbar-component"></div>
+
             <div class="enemy-deck-info" id="enemyDeckInfo">Enemy: 9/15</div>
             
             <div class="field-zone enemy-zone" id="enemyZone">
@@ -564,6 +568,7 @@
                 <!-- Player cards will be placed here -->
             </div>
             
+            <div id="player-yards-bar" class="healthbar-component"></div>
             <div class="yards-display" style="bottom: min(10px, 2vh); top: auto;">Your Yards 10/100</div>
         </div>
         
@@ -1137,9 +1142,9 @@
                 document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
                 document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
                 
-                document.querySelector('.cards-remaining').textContent = `Draw Pile 🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
+                document.querySelector('.cards-remaining').textContent = `Draw Pile: ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length} 🂡`;
 
-                document.getElementById('enemyDeckInfo').textContent = `Enemy: 🂡 ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
+                document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length} 🂡`;
                 
                 const discardBtn = document.getElementById('discardBtn');
                 if (this.hasDiscardedThisRound) {
@@ -1164,6 +1169,15 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             new GameState();
+
+            const playerYardsBar = new HealthBarComponent('#player-yards-bar', {
+                name: 'Player Yards',
+                initialValue: 30
+            });
+            const enemyYardsBar = new HealthBarComponent('#enemy-yards-bar', {
+                name: 'Enemy Yards',
+                initialValue: 30
+            });
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1187,5 +1201,6 @@
             });
         });
     </script>
+    <script src="js/healthbar.js"></script>
 </body>
 </html>
