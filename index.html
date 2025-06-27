@@ -62,21 +62,6 @@
             border-bottom: 3px solid #333;
         }
 
-        .yards-display {
-            position: absolute;
-            top: min(10px, 2vh);
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.9);
-            padding: min(8px, 1.5vh) min(16px, 3vw);
-            border-radius: 20px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
-            font-size: clamp(10px, 2.5vw, 14px);
-        }
-
         @keyframes pulse {
             0%, 100% { transform: translateX(-50%) scale(1); }
             50% { transform: translateX(-50%) scale(1.05); }
@@ -109,12 +94,12 @@
         }
 
         .enemy-zone {
-            top: 0;
+            top: 2.5rem;
             background: rgba(255,0,0,0.1);
         }
 
         .player-zone {
-            bottom: 0;
+            bottom: 1.5rem;
             background: rgba(0,0,255,0.1);
         }
 
@@ -442,7 +427,7 @@
 
         .enemy-deck-info {
             position: absolute;
-            top: min(10px, 2vh);
+            top: 5px;
             right: min(10px, 2vw);
             background: rgba(255,0,0,0.8);
             color: white;
@@ -450,6 +435,26 @@
             border-radius: 10px;
             font-size: clamp(8px, 2vw, 10px);
             font-weight: bold;
+            z-index: 100;
+        }
+
+        /* Health bar positioning */
+        #enemy-yards-bar {
+            position: absolute;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            z-index: 100;
+        }
+
+        #player-yards-bar {
+            position: absolute;
+            bottom: min(10px, 2vh);
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            z-index: 100;
         }
 
         /* Handle very small screens */
@@ -508,17 +513,25 @@
                 bottom: auto;
             }
             
-            .yards-display {
+            #enemy-yards-bar {
                 writing-mode: vertical-rl;
                 text-orientation: mixed;
                 top: 50%;
                 left: 10px;
                 transform: translateY(-50%);
+                width: auto;
+                height: 60%;
             }
             
-            .yards-display:last-child {
+            #player-yards-bar {
+                writing-mode: vertical-rl;
+                text-orientation: mixed;
+                top: 50%;
                 right: 10px;
                 left: auto;
+                transform: translateY(-50%);
+                width: auto;
+                height: 60%;
             }
         }
 
@@ -548,12 +561,14 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="styles/healthbar.css">
 </head>
 <body>
     <div class="game-container">
         <div class="field-section">
             <div class="field-lines"></div>
-            <div class="yards-display">Enemy Yards 0/100</div>
+
+            <div id="enemy-yards-bar" class="healthbar-component"></div>
             <div class="enemy-deck-info" id="enemyDeckInfo">Enemy: 9/15</div>
             
             <div class="field-zone enemy-zone" id="enemyZone">
@@ -564,7 +579,7 @@
                 <!-- Player cards will be placed here -->
             </div>
             
-            <div class="yards-display" style="bottom: min(10px, 2vh); top: auto;">Your Yards 10/100</div>
+            <div id="player-yards-bar" class="healthbar-component"></div>
         </div>
         
         <div class="hand-section">
@@ -603,6 +618,10 @@
                 this.selectedCards = new Set();
                 this.playerYards = 10;
                 this.enemyYards = 0;
+
+                // Health bar instances
+                this.playerYardsBar = null;
+                this.enemyYardsBar = null;
 
                 this.playerDeck = [
                     { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB' },
@@ -653,14 +672,31 @@
                 this.enemyHand = [];
                 this.enemyDrawPile = [];
                 this.enemyDiscardPile = [];
-                
-                this.init();
+            }
+
+            initializeHealthBars() {
+                // Initialize player yards bar
+                this.playerYardsBar = new HealthBarComponent('#player-yards-bar', {
+                    name: 'Your Yards',
+                    initialValue: this.playerYards
+                });
+
+                // Initialize enemy yards bar  
+                this.enemyYardsBar = new HealthBarComponent('#enemy-yards-bar', {
+                    name: 'Enemy Yards',
+                    initialValue: this.enemyYards
+                });
             }
 
             init() {
                 this.generateInitialHand();
                 this.generateEnemyDeck();
                 this.setupEventListeners();
+                
+                // Initialize health bars after DOM is ready
+                setTimeout(() => {
+                    this.initializeHealthBars();
+                }, 100);
                 
                 this.startNewRound();
                 this.updateUI();
@@ -1064,11 +1100,20 @@
                 const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
                 const enemyGain = Math.max(0, Math.floor((enemyPower - playerPower) / 2));
                 
+                // Update yards and health bars
                 this.playerYards += playerGain;
                 this.enemyYards += enemyGain;
                 
                 this.playerYards = Math.min(100, this.playerYards);
                 this.enemyYards = Math.min(100, this.enemyYards);
+                
+                // Update health bars if they exist
+                if (this.playerYardsBar) {
+                    this.playerYardsBar.setHealth(this.playerYards);
+                }
+                if (this.enemyYardsBar) {
+                    this.enemyYardsBar.setHealth(this.enemyYards);
+                }
                 
                 this.updateUI();
                 this.showMessage(`Round ${this.round} Complete! You: ${playerPower} power (+${playerGain} yards), Enemy: ${enemyPower} power (+${enemyGain} yards)`);
@@ -1134,13 +1179,18 @@
             }
 
             updateUI() {
-                document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
-                document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
-                
-                document.querySelector('.cards-remaining').textContent = `Draw Pile 🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
+                document.querySelector('.cards-remaining').textContent = `Draw Pile: ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length} 🂡`;
 
-                document.getElementById('enemyDeckInfo').textContent = `Enemy: 🂡 ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
+                document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length} 🂡`;
                 
+                if (this.enemyYardsBar) {
+                    this.enemyYardsBar.add(10);
+                }
+
+                if (this.playerYardsBar) {
+                    this.playerYardsBar.add(10);
+                }
+
                 const discardBtn = document.getElementById('discardBtn');
                 if (this.hasDiscardedThisRound) {
                     discardBtn.style.opacity = '0.5';
@@ -1163,7 +1213,8 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            new GameState();
+            const game = new GameState();
+            game.init();
         });
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -1187,5 +1238,6 @@
             });
         });
     </script>
+    <script src="js/healthbar.js"></script>
 </body>
 </html>
