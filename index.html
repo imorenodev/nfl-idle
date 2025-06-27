@@ -443,9 +443,9 @@
         
         <div class="hand-section">
             <div class="hand-controls">
-                <button class="discard-btn" id="discardBtn">Discard</button>
+                <button class="discard-btn" id="discardBtn">Sub Out</button>
                 <div class="cards-remaining">Available 9/15</div>
-                <button class="play-btn" id="playBtn">Play</button>
+                <button class="play-btn" id="playBtn">Snap 🏈</button>
             </div>
             
             <div class="hand-cards" id="handCards">
@@ -1053,9 +1053,9 @@
                 document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
                 document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
                 
-                document.querySelector('.cards-remaining').textContent = `Available ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
+                document.querySelector('.cards-remaining').textContent = `Draw Pile 🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
 
-                document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
+                document.getElementById('enemyDeckInfo').textContent = `Enemy: 🂡 ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
                 
                 // Update button states
                 const discardBtn = document.getElementById('discardBtn');
