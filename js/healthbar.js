@@ -110,7 +110,7 @@ class HealthBar {
     
     setBar(percent) {
         if (percent) {
-            this.lblValue.innerHTML = parseInt(percent) + '%';
+            this.lblValue.innerHTML = parseInt(percent) + '/100';
             if (this.dead) {
                 this.bar.classList.remove('dead');
                 this.lblValue.classList.remove('dead');

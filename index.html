@@ -94,12 +94,12 @@
         }
 
         .enemy-zone {
-            top: 0;
+            top: 2.5rem;
             background: rgba(255,0,0,0.1);
         }
 
         .player-zone {
-            bottom: 0;
+            bottom: 1.5rem;
             background: rgba(0,0,255,0.1);
         }
 
@@ -427,7 +427,7 @@
 
         .enemy-deck-info {
             position: absolute;
-            top: min(10px, 2vh);
+            top: 5px;
             right: min(10px, 2vw);
             background: rgba(255,0,0,0.8);
             color: white;
@@ -441,10 +441,10 @@
         /* Health bar positioning */
         #enemy-yards-bar {
             position: absolute;
-            top: min(10px, 2vh);
+            top: 2rem;
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
+            width: 90%;
             z-index: 100;
         }
 
@@ -453,7 +453,7 @@
             bottom: min(10px, 2vh);
             left: 50%;
             transform: translateX(-50%);
-            width: 80%;
+            width: 90%;
             z-index: 100;
         }
 
@@ -1186,7 +1186,7 @@
                 if (this.enemyYardsBar) {
                     this.enemyYardsBar.add(10);
                 }
-                
+
                 if (this.playerYardsBar) {
                     this.playerYardsBar.add(10);
                 }
