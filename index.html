@@ -2,465 +2,72 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Football Card Strategy Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Football Card Strategy Game - Phaser</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            position: fixed;
+            width: 100%;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-            min-height: 100vh;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: #1e3c72;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow-x: hidden;
-            overflow-y: hidden;
         }
 
-        .game-container {
-            width: 400px;
-            height: 700px;
-            background: #f8f9fa;
-            border-radius: 20px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-            overflow: hidden;
-            position: relative;
-        }
-
-        .field-section {
-            height: 280px;
-            background: linear-gradient(180deg, #4CAF50 0%, #45a049 100%);
-            position: relative;
-            border-bottom: 3px solid #333;
-        }
-
-        .yards-display {
-            position: absolute;
-            top: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255,255,255,0.9);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { transform: translateX(-50%) scale(1); }
-            50% { transform: translateX(-50%) scale(1.05); }
-        }
-
-        .field-lines {
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-image: 
-                repeating-linear-gradient(0deg, 
-                    transparent, 
-                    transparent 20px, 
-                    rgba(255,255,255,0.3) 20px, 
-                    rgba(255,255,255,0.3) 22px);
-        }
-
-        .field-zone {
-            position: absolute;
+        #game-container {
             width: 100%;
-            height: 50%;
-            display: flex;
-            justify-content: space-around;
-            align-items: center;
-            padding: 0 20px;
-        }
-
-        .enemy-zone {
-            top: 0;
-            background: rgba(255,0,0,0.1);
-        }
-
-        .player-zone {
-            bottom: 0;
-            background: rgba(0,0,255,0.1);
-        }
-
-        .field-card {
-            width: 50px;
-            height: 70px;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: #333;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            transform-style: preserve-3d;
-        }
-
-        .field-card:hover {
-            transform: translateY(-5px) rotateY(10deg);
-            box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-        }
-
-        .field-card.enemy {
-            background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-            color: white;
-        }
-
-        .field-card.player {
-            background: linear-gradient(135deg, #4ecdc4, #44a08d);
-            color: white;
-        }
-
-        .hand-section {
-            height: 420px;
-            background: #2c3e50;
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .hand-controls {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .cards-remaining {
-            background: rgba(255,255,255,0.1);
-            padding: 8px 12px;
-            border-radius: 15px;
-            color: white;
-            font-size: 12px;
-            backdrop-filter: blur(10px);
-        }
-
-        .discard-btn, .play-btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 25px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .discard-btn {
-            background: linear-gradient(135deg, #e74c3c, #c0392b);
-            color: white;
-        }
-
-        .discard-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(231,76,60,0.4);
-        }
-
-        .play-btn {
-            background: linear-gradient(135deg, #27ae60, #219a52);
-            color: white;
-        }
-
-        .play-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(39,174,96,0.4);
-        }
-
-        .hand-cards {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-            flex: 1;
-        }
-
-        .card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 12px;
-            padding: 8px;
-            color: white;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            height: 100%;
+            max-width: 420px;
+            max-height: 700px;
             position: relative;
-            overflow: hidden;
-            transform-style: preserve-3d;
-            border: 2px solid transparent;
         }
 
-        .card::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4);
-            background-size: 400% 400%;
-            border-radius: 12px;
-            z-index: -1;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            animation: gradientShift 3s ease infinite;
-        }
-
-        @keyframes gradientShift {
-            0%, 100% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-        }
-
-        .card:hover::before {
-            opacity: 1;
-        }
-
-        .card:hover {
-            transform: translateY(-8px) rotateX(10deg) rotateY(5deg);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.4);
-        }
-
-        .card.selected {
-            transform: translateY(-12px) scale(1.05);
-            border-color: #ffd700;
-            box-shadow: 0 0 20px rgba(255,215,0,0.6);
-        }
-
-        .card.selected::before {
-            opacity: 1;
-        }
-
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .card-cost {
-            width: 20px;
-            height: 20px;
-            background: #f39c12;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .card-rarity {
-            width: 20px;
-            height: 20px;
-            background: #e74c3c;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 10px;
-            font-weight: bold;
-            color: white;
-        }
-
-        .card-image {
-            width: 100%;
-            height: 60px;
-            background: linear-gradient(45deg, #2c3e50, #3498db);
-            border-radius: 8px;
-            margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            color: white;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-image::after {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s ease;
-            opacity: 0;
-        }
-
-        .card:hover .card-image::after {
-            opacity: 1;
-            animation: shine 0.6s ease;
-        }
-
-        .position-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: rgba(255,255,255,0.9);
-            color: #333;
-            font-size: 8px;
-            padding: 2px 4px;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-
-        @keyframes shine {
-            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        .card-name {
-            font-size: 11px;
-            font-weight: bold;
-            text-align: center;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
-        }
-
-        .floating-animation {
-            animation: float 3s ease-in-out infinite;
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-        }
-
-        .slide-in {
-            animation: slideIn 0.5s ease-out;
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(-100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .card-enter {
-            animation: cardEnter 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        @keyframes cardEnter {
-            0% { 
-                transform: scale(0) rotate(180deg);
-                opacity: 0;
-            }
-            100% { 
-                transform: scale(1) rotate(0deg);
-                opacity: 1;
-            }
-        }
-
-        .field-placement {
-            animation: fieldPlace 0.8s ease-out;
-        }
-
-        @keyframes fieldPlace {
-            0% { 
-                transform: scale(1.5) translateY(-50px);
-                opacity: 0;
-            }
-            50% {
-                transform: scale(1.2) translateY(-25px);
-                opacity: 0.7;
-            }
-            100% { 
-                transform: scale(1) translateY(0);
-                opacity: 1;
-            }
-        }
-
-        @keyframes messageFloat {
-            0% { 
-                opacity: 0;
-                transform: translate(-50%, -50%) scale(0.5);
-            }
-            20% { 
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1.1);
-            }
-            80% { 
-                opacity: 1;
-                transform: translate(-50%, -50%) scale(1);
-            }
-            100% { 
-                opacity: 0;
-                transform: translate(-50%, -60%) scale(0.9);
-            }
-        }
-
-        .enemy-deck-info {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background: rgba(255,0,0,0.8);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 10px;
-            font-size: 10px;
-            font-weight: bold;
-        }
-
-        @media (max-width: 480px) {
-            .game-container {
-                width: 100vw;
-                height: 100vh;
-                border-radius: 0;
+        @media (min-width: 768px) {
+            #game-container {
+                width: 400px;
+                height: 700px;
+                border-radius: 20px;
+                overflow: hidden;
+                box-shadow: 0 20px 40px rgba(0,0,0,0.3);
             }
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/phaser/3.70.0/phaser.min.js"></script>
 </head>
 <body>
-    <div class="game-container">
-        <div class="field-section">
-            <div class="field-lines"></div>
-            <div class="yards-display">Enemy Yards 0/100</div>
-            <div class="enemy-deck-info" id="enemyDeckInfo">Enemy: 9/15</div>
-            
-            <div class="field-zone enemy-zone" id="enemyZone">
-                <!-- Enemy cards will be placed here -->
-            </div>
-            
-            <div class="field-zone player-zone" id="playerZone">
-                <!-- Player cards will be placed here -->
-            </div>
-            
-            <div class="yards-display" style="bottom: 10px; top: auto;">Your Yards 10/100</div>
-        </div>
-        
-        <div class="hand-section">
-            <div class="hand-controls">
-                <button class="discard-btn" id="discardBtn">Sub Out</button>
-                <div class="cards-remaining">Available 9/15</div>
-                <button class="play-btn" id="playBtn">Snap 🏈</button>
-            </div>
-            
-            <div class="hand-cards" id="handCards">
-                <!-- Hand cards will be generated here -->
-            </div>
-        </div>
-    </div>
+    <div id="game-container"></div>
 
     <script>
-        class GameState {
+        class FootballCardGame extends Phaser.Scene {
             constructor() {
+                super({ key: 'FootballCardGame' });
+                
+                // Game state
                 this.selectedCards = new Set();
                 this.playerYards = 10;
                 this.enemyYards = 0;
-
+                this.round = 1;
+                this.hasDiscardedThisRound = false;
+                
+                // Deck data
                 this.playerDeck = [
                     { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB' },
                     { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB' },
@@ -478,18 +85,7 @@
                     { name: 'KELCE', cost: 7, rarity: 6, position: 'TE' },
                     { name: 'WATT', cost: 8, rarity: 6, position: 'DE' }
                 ];
-                this.playerHand = [];
-                this.playerDrawPile = []; // Remaining cards in deck
-                this.playerDiscardPile = []; // Cards that have been discarded/played
-
-                this.fieldCards = {
-                    player: [],
-                    enemy: []
-                };
-                this.hasDiscardedThisRound = false; // Track if player has discarded this round
-                this.round = 1;
                 
-                // Enemy deck management
                 this.enemyDeck = [
                     { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB' },
                     { name: 'WILSON', cost: 6, rarity: 4, position: 'QB' },
@@ -507,210 +103,443 @@
                     { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE' },
                     { name: 'DONALD', cost: 8, rarity: 6, position: 'DT' }
                 ];
-
+                
+                // Initialize arrays
+                this.playerHand = [];
+                this.playerDrawPile = [];
+                this.playerDiscardPile = [];
                 this.enemyHand = [];
                 this.enemyDrawPile = [];
                 this.enemyDiscardPile = [];
+                this.fieldCards = { player: [], enemy: [] };
                 
-                this.init();
+                // UI elements
+                this.handCardSprites = [];
+                this.fieldCardSprites = { player: [], enemy: [] };
             }
 
-            init() {
-                this.generateInitialHand();
-                this.generateEnemyDeck();
-                this.setupEventListeners();
+            create() {
+                console.log('Game scene created');
+                const { width, height } = this.scale;
                 
-                // Start the first round (this will draw cards and have enemy play)
+                // Background
+                this.add.rectangle(0, 0, width, height, 0xf8f9fa).setOrigin(0, 0);
+                
+                // Field section (top 40%)
+                this.fieldHeight = height * 0.4;
+                const field = this.add.rectangle(0, 0, width, this.fieldHeight, 0x4CAF50).setOrigin(0, 0);
+                
+                // Field lines
+                for (let i = 0; i < 10; i++) {
+                    const y = (this.fieldHeight / 10) * i;
+                    this.add.rectangle(0, y, width, 2, 0xffffff, 0.3).setOrigin(0, 0);
+                }
+                
+                // Field zones
+                this.enemyZoneY = 60;
+                this.playerZoneY = this.fieldHeight - 100;
+                
+                // Hand section (bottom 60%)
+                const handBg = this.add.rectangle(0, this.fieldHeight, width, height - this.fieldHeight, 0x2c3e50).setOrigin(0, 0);
+                
+                // UI Text
+                this.enemyYardsText = this.add.text(width / 2, 20, 'Enemy Yards 0/100', {
+                    fontSize: '14px',
+                    color: '#333',
+                    backgroundColor: '#ffffffee',
+                    padding: { x: 10, y: 5 }
+                }).setOrigin(0.5, 0.5);
+                
+                this.playerYardsText = this.add.text(width / 2, this.fieldHeight - 20, 'Your Yards 10/100', {
+                    fontSize: '14px',
+                    color: '#333',
+                    backgroundColor: '#ffffffee',
+                    padding: { x: 10, y: 5 }
+                }).setOrigin(0.5, 0.5);
+                
+                this.enemyDeckText = this.add.text(width - 10, 10, 'Enemy: 15/15', {
+                    fontSize: '12px',
+                    color: '#fff',
+                    backgroundColor: '#ff0000cc',
+                    padding: { x: 6, y: 4 }
+                }).setOrigin(1, 0);
+                
+                // Buttons
+                this.createButtons();
+                
+                // Cards remaining text
+                this.cardsRemainingText = this.add.text(width / 2, this.fieldHeight + 30, 'Available 15/15', {
+                    fontSize: '14px',
+                    color: '#fff',
+                    backgroundColor: '#ffffff22',
+                    padding: { x: 10, y: 6 }
+                }).setOrigin(0.5, 0.5);
+                
+                // Initialize game
+                this.initializeGame();
+            }
+
+            createButtons() {
+                const { width, height } = this.scale;
+                const buttonY = this.fieldHeight + 30;
+                
+                // Discard button
+                this.discardBtn = this.add.container(80, buttonY);
+                const discardBg = this.add.rectangle(0, 0, 100, 40, 0xe74c3c);
+                discardBg.setInteractive({ useHandCursor: true });
+                const discardText = this.add.text(0, 0, 'SUB OUT', {
+                    fontSize: '12px',
+                    color: '#fff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                this.discardBtn.add([discardBg, discardText]);
+                
+                discardBg.on('pointerdown', () => this.discardSelected());
+                discardBg.on('pointerover', () => discardBg.setScale(1.1));
+                discardBg.on('pointerout', () => discardBg.setScale(1));
+                
+                // Play button
+                this.playBtn = this.add.container(width - 80, buttonY);
+                const playBg = this.add.rectangle(0, 0, 100, 40, 0x27ae60);
+                playBg.setInteractive({ useHandCursor: true });
+                const playText = this.add.text(0, 0, 'SNAP 🏈', {
+                    fontSize: '12px',
+                    color: '#fff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                this.playBtn.add([playBg, playText]);
+                
+                playBg.on('pointerdown', () => this.playSelectedCards());
+                playBg.on('pointerover', () => playBg.setScale(1.1));
+                playBg.on('pointerout', () => playBg.setScale(1));
+            }
+
+            initializeGame() {
+                // Shuffle and initialize decks
+                this.playerDrawPile = Phaser.Utils.Array.Shuffle([...this.playerDeck]).map((card, i) => ({
+                    ...card,
+                    id: `deck-${i}`
+                }));
+                
+                this.enemyDrawPile = Phaser.Utils.Array.Shuffle([...this.enemyDeck]).map((card, i) => ({
+                    ...card,
+                    id: `enemy-deck-${i}`
+                }));
+                
+                // Start first round
                 this.startNewRound();
+            }
+
+            startNewRound() {
+                // Draw cards
+                this.drawPlayerCards(6);
+                this.drawEnemyCards(6);
+                
+                // Enemy plays cards
+                const enemyPower = this.playEnemyCards();
+                
+                // Render everything
+                this.renderHand();
+                this.renderFieldCards();
                 this.updateUI();
-            }
-
-            generateInitialHand() {
-                // Shuffle the deck for variety
-                const shuffledPlayers = [...this.playerDeck].sort(() => Math.random() - 0.5);
                 
-                // Store the full deck (don't draw initial hand here)
-                this.playerDrawPile = shuffledPlayers.map((player, index) => ({
-                    ...player,
-                    id: `deck-${index}`,
-                    element: null
-                }));
+                // Show message
+                this.showMessage(`Round ${this.round} starts! Enemy: ${enemyPower} power`);
             }
 
-            generateEnemyDeck() {
-                // Shuffle enemy deck
-                const shuffledEnemyPlayers = [...this.enemyDeck].sort(() => Math.random() - 0.5);
-                
-                // Store the full enemy deck (don't draw initial hand here)
-                this.enemyDrawPile = shuffledEnemyPlayers.map((player, index) => ({
-                    ...player,
-                    id: `enemy-deck-${index}`
-                }));
-            }
-
-            generateEnemyHand() {
-                // Enemy hand is already generated in generateEnemyDeck
-                // This method can be used for re-drawing enemy hand
-            }
-
-            playEnemyCards() {
-                if (this.enemyHand.length === 0) return 0;
-
-                const cardsToPlay = this.enemyHand.length;
-                let totalEnemyPower = 0;
-
-                // Play all enemy cards
-                this.enemyHand.forEach(card => {
-                    // Calculate power
-                    totalEnemyPower += card.cost + card.rarity;
+            drawPlayerCards(count) {
+                for (let i = 0; i < count; i++) {
+                    if (this.playerDrawPile.length === 0 && this.playerDiscardPile.length > 0) {
+                        this.shuffleDiscardIntoDeck();
+                    }
                     
-                    // Add to enemy field
-                    this.fieldCards.enemy.push({
-                        name: card.name,
-                        position: card.position,
-                        cost: card.cost,    // Store cost and rarity
-                        rarity: card.rarity,
-                        id: `enemy-field-${Date.now()}-${Math.random()}`,
-                        element: null
-                    });
-                });
-
-                // Clear enemy hand (all cards played)
-                this.enemyHand = [];
-
-                return totalEnemyPower;
+                    const card = this.playerDrawPile.shift();
+                    if (card) {
+                        card.id = `hand-${Date.now()}-${Math.random()}`;
+                        this.playerHand.push(card);
+                    }
+                }
             }
 
             drawEnemyCards(count) {
-                const cardsToDraw = count;
-                
-                for (let i = 0; i < cardsToDraw; i++) {
-
-                    const newCard = this.enemyDrawPile.shift();
-                    if (newCard) {
-                        newCard.id = `enemy-hand-${Date.now()}-${Math.random()}`;
-                        this.enemyHand.push(newCard);
-                    }
-
-                    // Check if we need to shuffle enemy discard pile into deck
-                    if (this.getNumberOfCardsInEnemyDrawPile() === 0 && this.getNumberOfCardsInEnemyDiscardPile() > 0) {
+                for (let i = 0; i < count; i++) {
+                    if (this.enemyDrawPile.length === 0 && this.enemyDiscardPile.length > 0) {
                         this.shuffleEnemyDiscardIntoDeck();
                     }
+                    
+                    const card = this.enemyDrawPile.shift();
+                    if (card) {
+                        card.id = `enemy-hand-${Date.now()}-${Math.random()}`;
+                        this.enemyHand.push(card);
+                    }
                 }
-                
-                this.enemyCardsRemaining = this.getNumberOfCardsInEnemyDrawPile();
             }
 
-            shuffleEnemyDiscardIntoDeck() {
-                // Shuffle enemy discard pile
-                const shuffled = [...this.enemyDiscardPile].sort(() => Math.random() - 0.5);
+            playEnemyCards() {
+                let totalPower = 0;
                 
-                // Add to enemy deck
-                this.enemyDrawPile.push(...shuffled);
+                this.enemyHand.forEach(card => {
+                    totalPower += card.cost + card.rarity;
+                    this.fieldCards.enemy.push({
+                        ...card,
+                        id: `enemy-field-${Date.now()}-${Math.random()}`
+                    });
+                });
                 
-                // Clear enemy discard pile
-                this.enemyDiscardPile = [];
-                
-                this.showMessage("🔄 Enemy deck reshuffled!");
+                this.enemyHand = [];
+                return totalPower;
             }
 
             renderHand() {
-                const handContainer = document.getElementById('handCards');
-                handContainer.innerHTML = '';
-
+                // Clear existing hand sprites
+                this.handCardSprites.forEach(sprite => sprite.destroy());
+                this.handCardSprites = [];
+                
+                const { width } = this.scale;
+                const cardWidth = 80;
+                const cardHeight = 110;
+                const startY = this.fieldHeight + 180;
+                const spacing = 10;
+                const cardsPerRow = Math.floor((width - 20) / (cardWidth + spacing));
+                
                 this.playerHand.forEach((card, index) => {
-                    const cardElement = this.createCardElement(card, index);
-                    handContainer.appendChild(cardElement);
-                    card.element = cardElement;
+                    const row = Math.floor(index / cardsPerRow);
+                    const col = index % cardsPerRow;
+                    const x = 20 + col * (cardWidth + spacing) + cardWidth / 2;
+                    const y = startY + row * (cardHeight + spacing);
                     
-                    // Add entrance animation with delay
-                    setTimeout(() => {
-                        cardElement.classList.add('card-enter');
-                    }, index * 100);
+                    const cardSprite = this.createHandCard(card, x, y);
+                    this.handCardSprites.push(cardSprite);
+                    
+                    // Entrance animation
+                    cardSprite.setScale(0);
+                    this.tweens.add({
+                        targets: cardSprite,
+                        scaleX: 1,
+                        scaleY: 1,
+                        duration: 300,
+                        delay: index * 50,
+                        ease: 'Back.easeOut'
+                    });
                 });
             }
 
-            createCardElement(card, index) {
-                const cardDiv = document.createElement('div');
-                cardDiv.className = 'card floating-animation';
-                cardDiv.style.animationDelay = `${index * 0.2}s`;
-                cardDiv.dataset.cardId = card.id;
+            createHandCard(cardData, x, y) {
+                const container = this.add.container(x, y);
+                container.setSize(80, 110);
+                container.setInteractive({ useHandCursor: true });
+                container.setData('cardId', cardData.id);
+                container.setData('cardData', cardData);
+                container.setData('originalY', y);
                 
-                cardDiv.innerHTML = `
-                    <div class="card-header">
-                        <div class="card-cost">${card.cost}</div>
-                        <div class="card-rarity">${card.rarity}</div>
-                    </div>
-                    <div class="card-image">
-                        <div class="position-badge">${card.position}</div>
-                        ${card.name}
-                    </div>
-                    <div class="card-name">${card.name}</div>
-                `;
-
-                cardDiv.addEventListener('click', () => this.toggleCardSelection(card.id));
-                return cardDiv;
-            }
-
-            renderFieldCards() {
-                const enemyZone = document.getElementById('enemyZone');
-                const playerZone = document.getElementById('playerZone');
+                // Card background with gradient effect
+                const bg = this.add.graphics();
+                bg.fillStyle(0x667eea);
+                bg.fillRoundedRect(-40, -55, 80, 110, 8);
+                bg.lineStyle(2, 0xffffff);
+                bg.strokeRoundedRect(-40, -55, 80, 110, 8);
                 
-                enemyZone.innerHTML = '';
-                playerZone.innerHTML = '';
-
-                // Render enemy cards
-                this.fieldCards.enemy.forEach((card, index) => {
-                    const fieldCard = this.createFieldCard(card, 'enemy');
-                    enemyZone.appendChild(fieldCard);
-                    
-                    setTimeout(() => {
-                        fieldCard.classList.add('field-placement');
-                    }, index * 150);
+                // Cost circle
+                const costBg = this.add.graphics();
+                costBg.fillStyle(0xf39c12);
+                costBg.fillCircle(-25, -40, 12);
+                const costText = this.add.text(-25, -40, cardData.cost.toString(), {
+                    fontSize: '12px',
+                    color: '#fff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                
+                // Rarity circle
+                const rarityBg = this.add.graphics();
+                rarityBg.fillStyle(0xe74c3c);
+                rarityBg.fillCircle(25, -40, 12);
+                const rarityText = this.add.text(25, -40, cardData.rarity.toString(), {
+                    fontSize: '12px',
+                    color: '#fff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                
+                // Position badge
+                const posBg = this.add.graphics();
+                posBg.fillStyle(0xffffff, 0.9);
+                posBg.fillRoundedRect(10, -22, 25, 15, 4);
+                const positionText = this.add.text(22, -15, cardData.position, {
+                    fontSize: '10px',
+                    color: '#333',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                
+                // Card name
+                const nameText = this.add.text(0, 20, cardData.name, {
+                    fontSize: '11px',
+                    color: '#fff',
+                    fontStyle: 'bold',
+                    wordWrap: { width: 70 },
+                    align: 'center'
+                }).setOrigin(0.5, 0.5);
+                
+                container.add([bg, costBg, costText, rarityBg, rarityText, posBg, positionText, nameText]);
+                
+                // Store background reference for selection highlighting
+                container.setData('bg', bg);
+                
+                // Click handler
+                container.on('pointerdown', () => this.toggleCardSelection(container));
+                
+                // Hover effects
+                container.on('pointerover', () => {
+                    if (!this.selectedCards.has(cardData.id)) {
+                        this.tweens.add({
+                            targets: container,
+                            y: y - 10,
+                            scaleX: 1.05,
+                            scaleY: 1.05,
+                            duration: 200
+                        });
+                    }
                 });
-
-                // Render player field cards
-                this.fieldCards.player.forEach((card, index) => {
-                    const fieldCard = this.createFieldCard(card, 'player');
-                    playerZone.appendChild(fieldCard);
-                    
-                    setTimeout(() => {
-                        fieldCard.classList.add('field-placement');
-                    }, index * 150);
+                
+                container.on('pointerout', () => {
+                    if (!this.selectedCards.has(cardData.id)) {
+                        this.tweens.add({
+                            targets: container,
+                            y: y,
+                            scaleX: 1,
+                            scaleY: 1,
+                            duration: 200
+                        });
+                    }
                 });
+                
+                return container;
             }
 
-            createFieldCard(card, type) {
-                const fieldCard = document.createElement('div');
-                fieldCard.className = `field-card ${type}`;
-                fieldCard.innerHTML = `
-                    <div style="font-size: 8px; margin-bottom: 2px;">${card.position || ''}</div>
-                    <div>${card.name}</div>
-                `;
-                return fieldCard;
-            }
-
-            toggleCardSelection(cardId) {
-                const card = this.playerHand.find(c => c.id === cardId);
-                if (!card || !card.element) return;
-
+            toggleCardSelection(cardContainer) {
+                const cardId = cardContainer.getData('cardId');
+                const bg = cardContainer.getData('bg');
+                const originalY = cardContainer.getData('originalY');
+                
                 if (this.selectedCards.has(cardId)) {
                     this.selectedCards.delete(cardId);
-                    card.element.classList.remove('selected');
+                    bg.clear();
+                    bg.fillStyle(0x667eea);
+                    bg.fillRoundedRect(-40, -55, 80, 110, 8);
+                    bg.lineStyle(2, 0xffffff);
+                    bg.strokeRoundedRect(-40, -55, 80, 110, 8);
+                    
+                    this.tweens.add({
+                        targets: cardContainer,
+                        y: originalY,
+                        scaleX: 1,
+                        scaleY: 1,
+                        duration: 200
+                    });
                 } else {
                     this.selectedCards.add(cardId);
-                    card.element.classList.add('selected');
+                    bg.clear();
+                    bg.fillStyle(0x667eea);
+                    bg.fillRoundedRect(-40, -55, 80, 110, 8);
+                    bg.lineStyle(4, 0xffd700);
+                    bg.strokeRoundedRect(-40, -55, 80, 110, 8);
                     
-                    // Add selection effect
-                    this.addSelectionEffect(card.element);
+                    this.tweens.add({
+                        targets: cardContainer,
+                        y: originalY - 15,
+                        scaleX: 1.1,
+                        scaleY: 1.1,
+                        duration: 200
+                    });
                 }
             }
 
-            addSelectionEffect(element) {
-                element.style.transform = 'translateY(-12px) scale(1.05) rotateY(360deg)';
-                setTimeout(() => {
-                    element.style.transform = 'translateY(-12px) scale(1.05)';
-                }, 600);
+            renderFieldCards() {
+                // Clear existing field sprites
+                this.fieldCardSprites.player.forEach(sprite => sprite.destroy());
+                this.fieldCardSprites.enemy.forEach(sprite => sprite.destroy());
+                this.fieldCardSprites = { player: [], enemy: [] };
+                
+                const { width } = this.scale;
+                const cardWidth = 60;
+                const spacing = 10;
+                
+                // Render enemy cards
+                const enemyStartX = (width - (this.fieldCards.enemy.length * (cardWidth + spacing) - spacing)) / 2;
+                this.fieldCards.enemy.forEach((card, index) => {
+                    const x = enemyStartX + index * (cardWidth + spacing) + cardWidth / 2;
+                    const sprite = this.createFieldCard(card, x, this.enemyZoneY, true);
+                    this.fieldCardSprites.enemy.push(sprite);
+                    
+                    // Animation
+                    sprite.setScale(0);
+                    this.tweens.add({
+                        targets: sprite,
+                        scaleX: 1,
+                        scaleY: 1,
+                        duration: 300,
+                        delay: index * 100,
+                        ease: 'Back.easeOut'
+                    });
+                });
+                
+                // Render player cards
+                const playerStartX = (width - (this.fieldCards.player.length * (cardWidth + spacing) - spacing)) / 2;
+                this.fieldCards.player.forEach((card, index) => {
+                    const x = playerStartX + index * (cardWidth + spacing) + cardWidth / 2;
+                    const sprite = this.createFieldCard(card, x, this.playerZoneY, false);
+                    this.fieldCardSprites.player.push(sprite);
+                    
+                    // Animation
+                    sprite.setScale(0);
+                    this.tweens.add({
+                        targets: sprite,
+                        scaleX: 1,
+                        scaleY: 1,
+                        duration: 300,
+                        delay: index * 100,
+                        ease: 'Back.easeOut'
+                    });
+                });
+            }
+
+            createFieldCard(cardData, x, y, isEnemy) {
+                const container = this.add.container(x, y);
+                
+                // Card background
+                const bg = this.add.graphics();
+                bg.fillStyle(isEnemy ? 0xff6b6b : 0x4ecdc4);
+                bg.fillRoundedRect(-30, -40, 60, 80, 6);
+                bg.lineStyle(2, 0xffffff);
+                bg.strokeRoundedRect(-30, -40, 60, 80, 6);
+                
+                // Position text
+                const posText = this.add.text(0, -20, cardData.position, {
+                    fontSize: '10px',
+                    color: '#fff',
+                    fontStyle: 'bold'
+                }).setOrigin(0.5, 0.5);
+                
+                // Name text
+                const nameText = this.add.text(0, 5, cardData.name, {
+                    fontSize: '9px',
+                    color: '#fff',
+                    fontStyle: 'bold',
+                    wordWrap: { width: 50 },
+                    align: 'center'
+                }).setOrigin(0.5, 0.5);
+                
+                container.add([bg, posText, nameText]);
+                
+                // Floating animation
+                this.tweens.add({
+                    targets: container,
+                    y: y - 5,
+                    duration: 2000,
+                    yoyo: true,
+                    repeat: -1,
+                    ease: 'Sine.easeInOut'
+                });
+                
+                return container;
             }
 
             playSelectedCards() {
@@ -718,53 +547,55 @@
                     this.showMessage("Select cards to play!");
                     return;
                 }
-
+                
                 let totalPower = 0;
-                const playedCards = [];
-
-                this.selectedCards.forEach(cardId => {
-                    const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
-                    if (cardIndex !== -1) {
-                        const card = this.playerHand[cardIndex];
-                        playedCards.push(cardIndex);
-                        
-                        // Calculate power based on cost and rarity
+                const cardsToPlay = [];
+                
+                // Calculate power and collect cards to play
+                this.playerHand.forEach((card, index) => {
+                    if (this.selectedCards.has(card.id)) {
                         totalPower += card.cost + card.rarity;
-
+                        cardsToPlay.push({ card, index });
+                        
                         // Add to field
                         this.fieldCards.player.push({
-                            name: card.name,
-                            position: card.position,
-                            cost: card.cost,     // Store cost and rarity directly
-                            rarity: card.rarity,  // to avoid looking it up later
-                            id: `field-${Date.now()}-${Math.random()}`,
-                            element: null
+                            ...card,
+                            id: `field-${Date.now()}-${Math.random()}`
                         });
-                        
-                        // Remove from hand with animation
-                        if (card.element) {
-                            card.element.style.transform = 'scale(0) rotate(180deg)';
-                            card.element.style.opacity = '0';
-                        }
                     }
                 });
-
-                // Sort indices in reverse order to remove from end first
-                playedCards.sort((a, b) => b - a);
                 
+                // Animate cards leaving hand
+                cardsToPlay.forEach(({ index }) => {
+                    const sprite = this.handCardSprites[index];
+                    if (sprite) {
+                        this.tweens.add({
+                            targets: sprite,
+                            scaleX: 0,
+                            scaleY: 0,
+                            rotation: Math.PI,
+                            duration: 300,
+                            onComplete: () => sprite.destroy()
+                        });
+                    }
+                });
+                
+                // Remove played cards from hand
                 setTimeout(() => {
-                    playedCards.forEach(cardIndex => {
-                        this.playerHand.splice(cardIndex, 1);
+                    cardsToPlay.sort((a, b) => b.index - a.index);
+                    cardsToPlay.forEach(({ index }) => {
+                        this.playerHand.splice(index, 1);
                     });
                     
-                    // Discard all remaining cards in hand
+                    // Discard remaining hand
                     this.discardRemainingHand();
                     
-                    this.renderFieldCards();
+                    // Clear selection
+                    this.selectedCards.clear();
+                    
+                    // End round
                     this.endRound(totalPower);
-                }, 300);
-
-                this.selectedCards.clear();
+                }, 400);
             }
 
             discardSelected() {
@@ -772,61 +603,108 @@
                     this.showMessage("Select cards to discard!");
                     return;
                 }
-
+                
                 if (this.hasDiscardedThisRound) {
-                    this.showMessage("You can only discard once per round!");
+                    this.showMessage("Already discarded this round!");
                     return;
                 }
-
+                
                 const discardCount = this.selectedCards.size;
                 const cardsToDiscard = [];
-
-                // Collect cards to discard and add to discard pile
-                this.selectedCards.forEach(cardId => {
-                    const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
-                    if (cardIndex !== -1) {
-                        const card = this.playerHand[cardIndex];
-                        // Remove position and element data for discard pile
+                
+                // Collect cards to discard
+                this.playerHand.forEach((card, index) => {
+                    if (this.selectedCards.has(card.id)) {
                         this.playerDiscardPile.push({
                             name: card.name,
                             cost: card.cost,
                             rarity: card.rarity,
                             position: card.position
                         });
-                        cardsToDiscard.push(cardIndex);
+                        cardsToDiscard.push(index);
                     }
                 });
-
-                // Sort indices in reverse order to remove from end first
-                cardsToDiscard.sort((a, b) => b - a);
-
-                // Remove cards with animation
-                cardsToDiscard.forEach((cardIndex, i) => {
-                    const card = this.playerHand[cardIndex];
-                    if (card.element) {
-                        card.element.style.transform = 'translateX(-200px) rotate(-90deg)';
-                        card.element.style.opacity = '0';
-                        
-                        setTimeout(() => {
-                            this.playerHand.splice(cardIndex, 1);
-                            
-                            // After last card is removed, draw new cards
-                            if (i === cardsToDiscard.length - 1) {
-                                this.drawPlayerCards(discardCount);
-                                this.renderHand();
-                            }
-                        }, 300);
+                
+                // Animate cards being discarded
+                cardsToDiscard.forEach((index) => {
+                    const sprite = this.handCardSprites[index];
+                    if (sprite) {
+                        this.tweens.add({
+                            targets: sprite,
+                            x: -100,
+                            rotation: -Math.PI / 2,
+                            alpha: 0,
+                            duration: 300
+                        });
                     }
                 });
+                
+                // Remove cards and draw new ones
+                setTimeout(() => {
+                    cardsToDiscard.sort((a, b) => b - a);
+                    cardsToDiscard.forEach(index => {
+                        this.playerHand.splice(index, 1);
+                    });
+                    
+                    this.selectedCards.clear();
+                    this.hasDiscardedThisRound = true;
+                    
+                    // Draw new cards
+                    this.drawPlayerCards(discardCount);
+                    this.renderHand();
+                    this.updateUI();
+                    
+                    this.showMessage(`Discarded ${discardCount} cards`);
+                }, 400);
+            }
 
-                this.selectedCards.clear();
-                this.hasDiscardedThisRound = true;
+            discardRemainingHand() {
+                this.playerHand.forEach(card => {
+                    this.playerDiscardPile.push({
+                        name: card.name,
+                        cost: card.cost,
+                        rarity: card.rarity,
+                        position: card.position
+                    });
+                });
+                this.playerHand = [];
+            }
+
+            endRound(playerPower) {
+                // Calculate enemy power
+                let enemyPower = 0;
+                this.fieldCards.enemy.forEach(card => {
+                    enemyPower += card.cost + card.rarity;
+                });
+                
+                // Calculate yard gains
+                const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
+                const enemyGain = Math.max(0, Math.floor((enemyPower - playerPower) / 2));
+                
+                this.playerYards = Math.min(100, this.playerYards + playerGain);
+                this.enemyYards = Math.min(100, this.enemyYards + enemyGain);
+                
                 this.updateUI();
-                this.showMessage(`Discarded ${discardCount} cards, drew ${Math.min(discardCount, this.getNumberOfCardsInPlayerDrawPile())} new cards`);
+                this.showMessage(`You: ${playerPower} (+${playerGain}yd) | Enemy: ${enemyPower} (+${enemyGain}yd)`);
+                
+                // Check win conditions
+                if (this.playerYards >= 100) {
+                    this.time.delayedCall(2000, () => this.showMessage("🏆 TOUCHDOWN! YOU WIN!"));
+                } else if (this.enemyYards >= 100) {
+                    this.time.delayedCall(2000, () => this.showMessage("💀 ENEMY SCORED! YOU LOSE!"));
+                } else {
+                    // Clear field and start new round
+                    this.time.delayedCall(2500, () => {
+                        this.clearField();
+                        this.hasDiscardedThisRound = false;
+                        this.round++;
+                        this.startNewRound();
+                    });
+                }
             }
 
             clearField() {
-                // Add all player field cards to discard pile
+                // Add field cards to discard piles
                 this.fieldCards.player.forEach(card => {
                     this.playerDiscardPile.push({
                         name: card.name,
@@ -835,8 +713,7 @@
                         position: card.position
                     });
                 });
-
-                // Add all enemy field cards to enemy discard pile
+                
                 this.fieldCards.enemy.forEach(card => {
                     this.enemyDiscardPile.push({
                         name: card.name,
@@ -846,265 +723,149 @@
                     });
                 });
                 
-                // Clear field arrays
-                this.fieldCards.player = [];
-                this.fieldCards.enemy = [];
-                
-                // Re-render empty field
-                this.renderFieldCards();
-                
-                this.showMessage("⚡ Field cleared! Cards added to discard piles");
-            }
-
-            getCardCostByName(name) {
-                const cardData = {
-                    'MAHOMES': 8, 'ALLEN': 7, 'BURROW': 6, 'HURTS': 5, 'LAMAR': 6,
-                    'MCCAFFREY': 8, 'HENRY': 7, 'CHUBB': 5, 'COOK': 4,
-                    'JEFFERSON': 7, 'KUPP': 6, 'ADAMS': 6, 'DIGGS': 5,
-                    'KELCE': 7, 'WATT': 8
-                };
-                return cardData[name] || 5;
-            }
-
-            getCardRarityByName(name) {
-                const cardData = {
-                    'MAHOMES': 6, 'ALLEN': 6, 'BURROW': 5, 'HURTS': 4, 'LAMAR': 5,
-                    'MCCAFFREY': 6, 'HENRY': 5, 'CHUBB': 4, 'COOK': 3,
-                    'JEFFERSON': 6, 'KUPP': 5, 'ADAMS': 5, 'DIGGS': 4,
-                    'KELCE': 6, 'WATT': 6
-                };
-                return cardData[name] || 4;
-            }
-
-            getEnemyCardCostByName(name) {
-                const cardData = {
-                    'RODGERS': 7, 'WILSON': 6, 'PRESCOTT': 5, 'STAFFORD': 5, 'JONES': 4,
-                    'BARKLEY': 7, 'JONES II': 6, 'MIXON': 5, 'HARRIS': 4,
-                    'HILL': 7, 'CHASE': 6, 'HOPKINS': 5, 'EVANS': 5,
-                    'KITTLE': 6, 'DONALD': 8
-                };
-                return cardData[name] || 5;
-            }
-
-            getEnemyCardRarityByName(name) {
-                const cardData = {
-                    'RODGERS': 5, 'WILSON': 4, 'PRESCOTT': 4, 'STAFFORD': 3, 'JONES': 3,
-                    'BARKLEY': 5, 'JONES II': 4, 'MIXON': 4, 'HARRIS': 3,
-                    'HILL': 6, 'CHASE': 5, 'HOPKINS': 4, 'EVANS': 4,
-                    'KITTLE': 5, 'DONALD': 6
-                };
-                return cardData[name] || 4;
-            }
-
-            discardRemainingHand() {
-                // Add remaining hand cards to discard pile
-                this.playerHand.forEach(card => {
-                    this.playerDiscardPile.push({
-                        name: card.name,
-                        cost: card.cost,
-                        rarity: card.rarity,
-                        position: card.position
+                // Animate field cards disappearing
+                [...this.fieldCardSprites.player, ...this.fieldCardSprites.enemy].forEach((sprite, i) => {
+                    this.tweens.add({
+                        targets: sprite,
+                        alpha: 0,
+                        scaleX: 0,
+                        scaleY: 0,
+                        duration: 300,
+                        delay: i * 50,
+                        onComplete: () => sprite.destroy()
                     });
                 });
                 
-                // Clear hand
-                this.playerHand = [];
-            }
-
-            drawPlayerCards(count) {
-                const cardsToDraw = count;
-                
-                for (let i = 0; i < cardsToDraw; i++) {
-                    
-                    const newCard = this.playerDrawPile.shift();
-                    if (newCard) {
-                        newCard.id = `hand-${Date.now()}-${Math.random()}`;
-                        this.playerHand.push(newCard);
-                    }
-
-                    // Check if we need to shuffle discard pile into deck
-                    if (this.getNumberOfCardsInPlayerDrawPile() === 0 && this.getNumberOfCardsInPlayerDiscardPile() > 0) {
-                        this.shuffleDiscardIntoDeck();
-                    }
-                }
-                
-                this.cardsRemaining = this.getNumberOfCardsInPlayerDrawPile();
-                this.updateUI();
+                // Clear arrays
+                this.fieldCards = { player: [], enemy: [] };
+                this.fieldCardSprites = { player: [], enemy: [] };
             }
 
             shuffleDiscardIntoDeck() {
-                // Shuffle discard pile
-                const shuffled = [...this.playerDiscardPile].sort(() => Math.random() - 0.5);
-                
-                // Add to deck
-                this.playerDrawPile.push(...shuffled);
-                
-                // Clear discard pile
+                this.playerDrawPile = Phaser.Utils.Array.Shuffle([...this.playerDiscardPile]);
                 this.playerDiscardPile = [];
-                
-                this.showMessage("🔄 Deck reshuffled from discard pile!");
+                this.showMessage("🔄 Deck reshuffled!");
             }
 
-            getNumberOfCardsInPlayerDrawPile() {
-                return this.playerDrawPile.length;
-            }
-
-            getNumberOfCardsInPlayerDiscardPile() {
-                return this.playerDiscardPile.length;
-            }
-
-            getNumberOfCardsInEnemyDrawPile() {
-                return this.enemyDrawPile.length;
-            }
-
-            getNumberOfCardsInEnemyDiscardPile() {
-                return this.enemyDiscardPile.length;
-            }
-
-            endRound(playerPower) {
-                // Calculate enemy power from their field cards (they were already played at round start)
-                let enemyPower = 0;
-                this.fieldCards.enemy.forEach(card => {
-                    enemyPower += (card.cost || 0) + (card.rarity || 0);
-                });
-                
-                // Calculate yard gains
-                const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
-                const enemyGain = Math.max(0, Math.floor((enemyPower - playerPower) / 2));
-                
-                this.playerYards += playerGain;
-                this.enemyYards += enemyGain;
-                
-                // Ensure yards don't exceed 100
-                this.playerYards = Math.min(100, this.playerYards);
-                this.enemyYards = Math.min(100, this.enemyYards);
-                
-                this.updateUI();
-                this.showMessage(`Round ${this.round} Complete! You: ${playerPower} power (+${playerGain} yards), Enemy: ${enemyPower} power (+${enemyGain} yards)`);
-                
-                // Clear the field after a delay and add field cards to discard pile
-                setTimeout(() => {
-                    this.clearField();
-                    
-                    // Reset round state
-                    this.hasDiscardedThisRound = false;
-                    this.round++;
-                    
-                    // Start new round
-                    this.startNewRound();
-                }, 2500);
-                
-                // Check win conditions
-                if (this.playerYards >= 100) {
-                    setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 3000);
-                } else if (this.enemyYards >= 100) {
-                    setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 3000);
-                }
-            }
-
-            startNewRound() {
-                // Draw new hands for both players
-                this.drawPlayerCards(6);
-                this.drawEnemyCards(6);
-                
-                // Enemy plays their cards first so player can see them
-                const enemyPower = this.playEnemyCards();
-                
-                // Render enemy cards immediately
-                this.renderFieldCards();
-                
-                // Draw player hand after enemy has played
-                this.renderHand();
-                this.updateUI();
-                
-                // Show round start message
-                this.showMessage(`Round ${this.round} starts! Enemy played cards for ${enemyPower} power. Your turn!`);
+            shuffleEnemyDiscardIntoDeck() {
+                this.enemyDrawPile = Phaser.Utils.Array.Shuffle([...this.enemyDiscardPile]);
+                this.enemyDiscardPile = [];
+                this.showMessage("🔄 Enemy deck reshuffled!");
             }
 
             showMessage(text) {
-                // Create floating message
-                const message = document.createElement('div');
-                message.className = 'game-message';
-                message.textContent = text;
-                message.style.cssText = `
-                    position: fixed;
-                    top: 50%;
-                    left: 50%;
-                    transform: translate(-50%, -50%);
-                    background: rgba(0,0,0,0.9);
-                    color: white;
-                    padding: 15px 25px;
-                    border-radius: 25px;
-                    font-weight: bold;
-                    z-index: 1000;
-                    animation: messageFloat 3s ease-out forwards;
-                `;
+                const { width, height } = this.scale;
                 
-                document.body.appendChild(message);
+                // Create message container
+                const messageContainer = this.add.container(width / 2, height / 2);
                 
-                setTimeout(() => {
-                    if (message.parentNode) {
-                        message.parentNode.removeChild(message);
-                    }
-                }, 3000);
+                // Background
+                const bg = this.add.graphics();
+                bg.fillStyle(0x000000, 0.9);
+                bg.fillRoundedRect(-150, -30, 300, 60, 10);
+                bg.lineStyle(2, 0xffffff);
+                bg.strokeRoundedRect(-150, -30, 300, 60, 10);
+                
+                // Text
+                const messageText = this.add.text(0, 0, text, {
+                    fontSize: '16px',
+                    color: '#fff',
+                    fontStyle: 'bold',
+                    align: 'center',
+                    wordWrap: { width: 280 }
+                }).setOrigin(0.5, 0.5);
+                
+                messageContainer.add([bg, messageText]);
+                messageContainer.setDepth(1000);
+                
+                // Animate in
+                messageContainer.setScale(0);
+                this.tweens.add({
+                    targets: messageContainer,
+                    scaleX: 1,
+                    scaleY: 1,
+                    duration: 300,
+                    ease: 'Back.easeOut'
+                });
+                
+                // Fade out and destroy
+                this.time.delayedCall(2500, () => {
+                    this.tweens.add({
+                        targets: messageContainer,
+                        alpha: 0,
+                        y: height / 2 - 50,
+                        duration: 500,
+                        onComplete: () => messageContainer.destroy()
+                    });
+                });
             }
 
             updateUI() {
-                document.querySelector('.yards-display').textContent = `Enemy Yards ${this.enemyYards}/100`;
-                document.querySelector('.yards-display:last-child').textContent = `Your Yards ${this.playerYards}/100`;
+                this.enemyYardsText.setText(`Enemy Yards ${this.enemyYards}/100`);
+                this.playerYardsText.setText(`Your Yards ${this.playerYards}/100`);
+                this.cardsRemainingText.setText(`Draw Pile 🂡 ${this.playerDrawPile.length}/${this.playerDeck.length}`);
+                this.enemyDeckText.setText(`Enemy: 🂡 ${this.enemyDrawPile.length}/${this.enemyDeck.length}`);
                 
-                document.querySelector('.cards-remaining').textContent = `Draw Pile 🂡 ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length}`;
-
-                document.getElementById('enemyDeckInfo').textContent = `Enemy: 🂡 ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length}`;
-                
-                // Update button states
-                const discardBtn = document.getElementById('discardBtn');
+                // Update discard button appearance
+                const discardBg = this.discardBtn.list[0];
                 if (this.hasDiscardedThisRound) {
-                    discardBtn.style.opacity = '0.5';
-                    discardBtn.style.cursor = 'not-allowed';
+                    discardBg.setAlpha(0.5);
+                    discardBg.disableInteractive();
                 } else {
-                    discardBtn.style.opacity = '1';
-                    discardBtn.style.cursor = 'pointer';
+                    discardBg.setAlpha(1);
+                    discardBg.setInteractive({ useHandCursor: true });
                 }
-            }
-
-            setupEventListeners() {
-                document.getElementById('playBtn').addEventListener('click', () => {
-                    this.playSelectedCards();
-                });
-
-                document.getElementById('discardBtn').addEventListener('click', () => {
-                    this.discardSelected();
-                });
             }
         }
 
-        // Initialize game when page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            new GameState();
+        // Game configuration
+        const gameConfig = {
+            type: Phaser.AUTO,
+            parent: 'game-container',
+            width: 400,
+            height: 700,
+            backgroundColor: '#f8f9fa',
+            scale: {
+                mode: Phaser.Scale.FIT,
+                autoCenter: Phaser.Scale.CENTER_BOTH
+            },
+            scene: FootballCardGame
+        };
+
+        // Handle mobile viewport
+        function updateViewport() {
+            const vh = window.innerHeight * 0.01;
+            document.documentElement.style.setProperty('--vh', `${vh}px`);
+            
+            // Update game size for mobile
+            if (window.innerWidth <= 768) {
+                gameConfig.width = Math.min(window.innerWidth, 420);
+                gameConfig.height = window.innerHeight;
+            }
+        }
+
+        updateViewport();
+        window.addEventListener('resize', updateViewport);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateViewport, 100);
         });
 
-        // Add some interactive field effects
-        document.addEventListener('DOMContentLoaded', () => {
-            const fieldSection = document.querySelector('.field-section');
-            
-            fieldSection.addEventListener('mousemove', (e) => {
-                const rect = fieldSection.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                
-                fieldSection.style.background = `
-                    radial-gradient(circle at ${x}px ${y}px, 
-                        rgba(255,255,255,0.1) 0%, 
-                        transparent 51%), 
-                    linear-gradient(180deg, #4CAF50 0%, #45a049 100%)
-                `;
+        // Create game
+        let game;
+        
+        // Wait for DOM to be ready
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                console.log('DOM loaded, creating game...');
+                game = new Phaser.Game(gameConfig);
             });
-            
-            fieldSection.addEventListener('mouseleave', () => {
-                fieldSection.style.background = 'linear-gradient(180deg, #4CAF50 0%, #45a049 100%)';
-            });
-        });
+        } else {
+            console.log('Creating game immediately...');
+            game = new Phaser.Game(gameConfig);
+        }
+
+        // Debug - check if Phaser loaded
+        console.log('Phaser version:', Phaser.VERSION);
     </script>
 </body>
 </html>
