@@ -317,7 +317,7 @@
                     const x = startX + col * (cardWidth + spacing) + cardWidth / 2;
                     const y = startY + row * (cardHeight + spacing);
                     
-                    const cardSprite = this.createHandCard(card, x, y);
+                    const cardSprite = this.createCard(card, x, y, 1, true);
                     this.handCardSprites.push(cardSprite);
                     
                     // Entrance animation
@@ -333,27 +333,34 @@
                 });
             }
 
-            createHandCard(cardData, x, y) {
+            createCard(cardData, x, y, scale = 1, isInteractive = false, isEnemy = false) {
                 const container = this.add.container(x, y);
-                container.setSize(80, 110);
-                container.setInteractive({ useHandCursor: true });
-                container.setData('cardId', cardData.id);
-                container.setData('cardData', cardData);
-                container.setData('originalY', y);
+                const baseWidth = 80 * scale;
+                const baseHeight = 110 * scale;
+                
+                container.setSize(baseWidth, baseHeight);
+                
+                if (isInteractive) {
+                    container.setInteractive({ useHandCursor: true });
+                    container.setData('cardId', cardData.id);
+                    container.setData('cardData', cardData);
+                    container.setData('originalY', y);
+                }
                 
                 // Card background with gradient effect
                 const bg = this.add.graphics();
-                bg.fillStyle(0x667eea);
-                bg.fillRoundedRect(-40, -55, 80, 110, 8);
-                bg.lineStyle(2, 0xffffff);
-                bg.strokeRoundedRect(-40, -55, 80, 110, 8);
+                const bgColor = isEnemy ? 0xff6b6b : 0x667eea;
+                bg.fillStyle(bgColor);
+                bg.fillRoundedRect(-baseWidth/2, -baseHeight/2, baseWidth, baseHeight, 8 * scale);
+                bg.lineStyle(2 * scale, 0xffffff);
+                bg.strokeRoundedRect(-baseWidth/2, -baseHeight/2, baseWidth, baseHeight, 8 * scale);
                 
                 // Cost circle
                 const costBg = this.add.graphics();
                 costBg.fillStyle(0xf39c12);
-                costBg.fillCircle(-25, -40, 12);
-                const costText = this.add.text(-25, -40, cardData.cost.toString(), {
-                    fontSize: '12px',
+                costBg.fillCircle(-25 * scale, -40 * scale, 12 * scale);
+                const costText = this.add.text(-25 * scale, -40 * scale, cardData.cost.toString(), {
+                    fontSize: `${12 * scale}px`,
                     color: '#fff',
                     fontStyle: 'bold'
                 }).setOrigin(0.5, 0.5);
@@ -361,9 +368,9 @@
                 // Rarity circle
                 const rarityBg = this.add.graphics();
                 rarityBg.fillStyle(0xe74c3c);
-                rarityBg.fillCircle(25, -40, 12);
-                const rarityText = this.add.text(25, -40, cardData.rarity.toString(), {
-                    fontSize: '12px',
+                rarityBg.fillCircle(25 * scale, -40 * scale, 12 * scale);
+                const rarityText = this.add.text(25 * scale, -40 * scale, cardData.rarity.toString(), {
+                    fontSize: `${12 * scale}px`,
                     color: '#fff',
                     fontStyle: 'bold'
                 }).setOrigin(0.5, 0.5);
@@ -371,54 +378,57 @@
                 // Position badge
                 const posBg = this.add.graphics();
                 posBg.fillStyle(0xffffff, 0.9);
-                posBg.fillRoundedRect(10, -22, 25, 15, 4);
-                const positionText = this.add.text(22, -15, cardData.position, {
-                    fontSize: '10px',
+                posBg.fillRoundedRect(10 * scale, -22 * scale, 25 * scale, 15 * scale, 4 * scale);
+                const positionText = this.add.text(22 * scale, -15 * scale, cardData.position, {
+                    fontSize: `${10 * scale}px`,
                     color: '#333',
                     fontStyle: 'bold'
                 }).setOrigin(0.5, 0.5);
                 
                 // Card name
-                const nameText = this.add.text(0, 20, cardData.name, {
-                    fontSize: '11px',
+                const nameText = this.add.text(0, 20 * scale, cardData.name, {
+                    fontSize: `${11 * scale}px`,
                     color: '#fff',
                     fontStyle: 'bold',
-                    wordWrap: { width: 70 },
+                    wordWrap: { width: 70 * scale },
                     align: 'center'
                 }).setOrigin(0.5, 0.5);
                 
                 container.add([bg, costBg, costText, rarityBg, rarityText, posBg, positionText, nameText]);
                 
-                // Store background reference for selection highlighting
-                container.setData('bg', bg);
-                
-                // Click handler
-                container.on('pointerdown', () => this.toggleCardSelection(container));
-                
-                // Hover effects
-                container.on('pointerover', () => {
-                    if (!this.selectedCards.has(cardData.id)) {
-                        this.tweens.add({
-                            targets: container,
-                            y: y - 10,
-                            scaleX: 1.05,
-                            scaleY: 1.05,
-                            duration: 200
-                        });
-                    }
-                });
-                
-                container.on('pointerout', () => {
-                    if (!this.selectedCards.has(cardData.id)) {
-                        this.tweens.add({
-                            targets: container,
-                            y: y,
-                            scaleX: 1,
-                            scaleY: 1,
-                            duration: 200
-                        });
-                    }
-                });
+                if (isInteractive) {
+                    // Store background reference for selection highlighting
+                    container.setData('bg', bg);
+                    container.setData('bgColor', bgColor);
+                    
+                    // Click handler
+                    container.on('pointerdown', () => this.toggleCardSelection(container));
+                    
+                    // Hover effects
+                    container.on('pointerover', () => {
+                        if (!this.selectedCards.has(cardData.id)) {
+                            this.tweens.add({
+                                targets: container,
+                                y: y - 10,
+                                scaleX: 1.05,
+                                scaleY: 1.05,
+                                duration: 200
+                            });
+                        }
+                    });
+                    
+                    container.on('pointerout', () => {
+                        if (!this.selectedCards.has(cardData.id)) {
+                            this.tweens.add({
+                                targets: container,
+                                y: y,
+                                scaleX: 1,
+                                scaleY: 1,
+                                duration: 200
+                            });
+                        }
+                    });
+                }
                 
                 return container;
             }
@@ -426,12 +436,13 @@
             toggleCardSelection(cardContainer) {
                 const cardId = cardContainer.getData('cardId');
                 const bg = cardContainer.getData('bg');
+                const bgColor = cardContainer.getData('bgColor');
                 const originalY = cardContainer.getData('originalY');
                 
                 if (this.selectedCards.has(cardId)) {
                     this.selectedCards.delete(cardId);
                     bg.clear();
-                    bg.fillStyle(0x667eea);
+                    bg.fillStyle(bgColor);
                     bg.fillRoundedRect(-40, -55, 80, 110, 8);
                     bg.lineStyle(2, 0xffffff);
                     bg.strokeRoundedRect(-40, -55, 80, 110, 8);
@@ -446,7 +457,7 @@
                 } else {
                     this.selectedCards.add(cardId);
                     bg.clear();
-                    bg.fillStyle(0x667eea);
+                    bg.fillStyle(bgColor);
                     bg.fillRoundedRect(-40, -55, 80, 110, 8);
                     bg.lineStyle(4, 0xffd700);
                     bg.strokeRoundedRect(-40, -55, 80, 110, 8);
@@ -468,25 +479,37 @@
                 this.fieldCardSprites = { player: [], enemy: [] };
                 
                 const { width } = this.scale;
-                const cardWidth = 60;
-                const spacing = 2;
+                const cardScale = 0.75; // Scale down cards to fit in field
+                const cardWidth = 80 * cardScale;
+                const spacing = 5;
                 
                 // Render enemy cards
                 const enemyStartX = (width - (this.fieldCards.enemy.length * (cardWidth + spacing) - spacing)) / 2;
                 this.fieldCards.enemy.forEach((card, index) => {
                     const x = enemyStartX + index * (cardWidth + spacing) + cardWidth / 2;
-                    const sprite = this.createFieldCard(card, x, this.enemyZoneY, true);
+                    const sprite = this.createCard(card, x, this.enemyZoneY, cardScale, false, true);
                     this.fieldCardSprites.enemy.push(sprite);
                     
                     // Animation
                     sprite.setScale(0);
                     this.tweens.add({
                         targets: sprite,
-                        scaleX: 1,
-                        scaleY: 1,
+                        scaleX: cardScale,
+                        scaleY: cardScale,
                         duration: 300,
                         delay: index * 100,
                         ease: 'Back.easeOut'
+                    });
+                    
+                    // Floating animation
+                    this.tweens.add({
+                        targets: sprite,
+                        y: this.enemyZoneY - 5,
+                        duration: 2000,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut',
+                        delay: index * 200
                     });
                 });
                 
@@ -494,61 +517,31 @@
                 const playerStartX = (width - (this.fieldCards.player.length * (cardWidth + spacing) - spacing)) / 2;
                 this.fieldCards.player.forEach((card, index) => {
                     const x = playerStartX + index * (cardWidth + spacing) + cardWidth / 2;
-                    const sprite = this.createFieldCard(card, x, this.playerZoneY, false);
+                    const sprite = this.createCard(card, x, this.playerZoneY, cardScale, false, false);
                     this.fieldCardSprites.player.push(sprite);
                     
                     // Animation
                     sprite.setScale(0);
                     this.tweens.add({
                         targets: sprite,
-                        scaleX: 1,
-                        scaleY: 1,
+                        scaleX: cardScale,
+                        scaleY: cardScale,
                         duration: 300,
                         delay: index * 100,
                         ease: 'Back.easeOut'
                     });
+                    
+                    // Floating animation
+                    this.tweens.add({
+                        targets: sprite,
+                        y: this.playerZoneY - 5,
+                        duration: 2000,
+                        yoyo: true,
+                        repeat: -1,
+                        ease: 'Sine.easeInOut',
+                        delay: index * 200
+                    });
                 });
-            }
-
-            createFieldCard(cardData, x, y, isEnemy) {
-                const container = this.add.container(x, y);
-                
-                // Card background
-                const bg = this.add.graphics();
-                bg.fillStyle(isEnemy ? 0xff6b6b : 0x4ecdc4);
-                bg.fillRoundedRect(-30, -40, 55, 73, 6);
-                bg.lineStyle(2, 0xffffff);
-                bg.strokeRoundedRect(-30, -40, 55, 73, 6);
-                
-                // Position text
-                const posText = this.add.text(0, -20, cardData.position, {
-                    fontSize: '10px',
-                    color: '#fff',
-                    fontStyle: 'bold'
-                }).setOrigin(0.5, 0.5);
-                
-                // Name text
-                const nameText = this.add.text(0, 5, cardData.name, {
-                    fontSize: '9px',
-                    color: '#fff',
-                    fontStyle: 'bold',
-                    wordWrap: { width: 50 },
-                    align: 'center'
-                }).setOrigin(0.5, 0.5);
-                
-                container.add([bg, posText, nameText]);
-                
-                // Floating animation
-                this.tweens.add({
-                    targets: container,
-                    y: y - 5,
-                    duration: 2000,
-                    yoyo: true,
-                    repeat: -1,
-                    ease: 'Sine.easeInOut'
-                });
-                
-                return container;
             }
 
             playSelectedCards() {
@@ -848,12 +841,13 @@
 
         // Handle mobile viewport
         function updateViewport() {
+
             const vh = window.innerHeight * 0.01;
             document.documentElement.style.setProperty('--vh', `${vh}px`);
             
             // Update game size for mobile
             if (window.innerWidth <= 768) {
-                gameConfig.width = Math.min(window.innerWidth, 420);
+                gameConfig.width = Math.max(window.innerWidth, 420);
                 gameConfig.height = window.innerHeight;
             }
         }
