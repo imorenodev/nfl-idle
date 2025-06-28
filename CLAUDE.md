@@ -55,7 +55,8 @@ js/
 
 ### Game Flow Architecture
 - **Turn-based rounds**: Enemy plays first (all 6 cards), then player chooses strategy
-- **Card system**: 15-card decks with NFL players, each having cost/rarity stats and position-based gameplay
+- **Card system**: 25-card decks with NFL players (15 offensive + 10 defensive), each having cost/rarity stats and position-based gameplay
+- **Snap behavior**: When player clicks "Snap 🏈", selected cards are played and unselected cards are immediately discarded with visual distinction
 - **Combat calculation**: Yard gains based on rush/pass offense vs defense stats, requires QB to gain yards
 - **Win/lose conditions**: 
   - Player wins: Reach 100 yards (touchdown) OR push enemy to 0 yards (safety)

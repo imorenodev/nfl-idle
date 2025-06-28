@@ -43,10 +43,6 @@ export class CombatEngine {
             }
         }
 
-        if (!hasQB) {
-            return { isValid: false, error: "NEED_QB" };
-        }
-
         return { isValid: true, hasQB, positionCounts };
     }
 
@@ -231,13 +227,13 @@ export class CombatEngine {
         if (playerStats.hasQB) {
             message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
         } else {
-            message += `You: No QB - No offensive yards (Defense only)\n`;
+            message += `You: No QB - Defense only (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
         }
 
         if (enemyStats.hasQB) {
             message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
         } else {
-            message += `Enemy: No QB - No offensive yards (Defense only)`;
+            message += `Enemy: No QB - Defense only (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
         }
 
         return message;
