@@ -636,22 +636,24 @@ class GameState {
             // No QB = no offensive yards for enemy either
             enemyGain = 0;
         }
-        
+                
+        // Store previous values
         const prevPlayerYards = this.playerYards;
         const prevEnemyYards = this.enemyYards;
 
-        // Update yards
-        this.playerYards += playerGain;
-        this.enemyYards += enemyGain;
-        
-        // Keep yards within bounds (0-100)
-        this.playerYards = Math.max(0, Math.min(100, this.playerYards));
-        this.enemyYards = Math.max(0, Math.min(100, this.enemyYards));
-        
+        // Calculate what the new yards would be
+        const newPlayerYards = this.playerYards + playerGain;
+        const newEnemyYards = this.enemyYards + enemyGain;
+
+        // Clamp to bounds (0-100)
+        this.playerYards = Math.max(0, Math.min(100, newPlayerYards));
+        this.enemyYards = Math.max(0, Math.min(100, newEnemyYards));
+
+        // Calculate the actual change that occurred (accounting for clamping)
         const playerYardsToAdd = this.playerYards - prevPlayerYards;
         const enemyYardsToAdd = this.enemyYards - prevEnemyYards;
 
-        // Update health bars if they exist
+        // Update health bars with the actual change
         if (this.playerYardsBar) {
             this.playerYardsBar.add(playerYardsToAdd);
         }
