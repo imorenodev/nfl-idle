@@ -20,7 +20,7 @@ export class CombatEngine {
             return { isValid: false, error: "TOO_MANY_CARDS" };
         }
 
-        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, DE: 0, DT: 0 };
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, DE: 0, DT: 0, LB: 0, CB: 0, S: 0 };
         let hasQB = false;
 
         selectedCards.forEach(card => {

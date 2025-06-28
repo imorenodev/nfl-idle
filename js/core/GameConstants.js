@@ -5,13 +5,16 @@ export const POSITION_LIMITS = {
     RB: 2,
     WR: 3,
     TE: 2,
-    DE: 1,
-    DT: 1
+    DE: 2,
+    DT: 2,
+    LB: 3,
+    CB: 3,
+    S: 2
 };
 
 export const GAME_CONFIG = {
     CARDS_PER_HAND: 6,
-    DECK_SIZE: 15,
+    DECK_SIZE: 25,
     CARDS_PER_ROUND: 6,
     MAX_YARDS: 100,
     STARTING_PLAYER_YARDS: 10,
@@ -67,6 +70,11 @@ export const GAME_MESSAGES = {
     TOO_MANY_RB: "Only 2 RBs allowed!",
     TOO_MANY_WR: "Only 3 WRs allowed!",
     TOO_MANY_TE: "Only 2 TEs allowed!",
+    TOO_MANY_DE: "Only 2 DEs allowed!",
+    TOO_MANY_DT: "Only 2 DTs allowed!",
+    TOO_MANY_LB: "Only 3 LBs allowed!",
+    TOO_MANY_CB: "Only 3 CBs allowed!",
+    TOO_MANY_S: "Only 2 Safeties allowed!",
     NEED_QB: "You must play a QB to gain yards!",
     DISCARD_ONCE: "You can only discard once per round!",
     SELECT_TO_DISCARD: "Select cards to discard!",

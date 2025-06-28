@@ -18,34 +18,19 @@ window.addEventListener('orientationchange', () => {
 // Import game over functionality
 import { CombatEngine } from './core/CombatEngine.js';
 import { gameOverManager } from './core/GameOverManager.js';
+import { CardDataProvider } from './data/CardDataProvider.js';
 
 class GameState {
     constructor() {
         this.selectedCards = new Set();
-        this.playerYards = 10;
-        this.enemyYards = 0;
+        this.playerYards = 20;
+        this.enemyYards = 20;
 
         // Health bar instances
         this.playerYardsBar = null;
         this.enemyYardsBar = null;
 
-        this.playerDeck = [
-            { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'BURROW', cost: 6, rarity: 5, position: 'QB', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'HURTS', cost: 5, rarity: 4, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 7, passDefense: 1 },
-            { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'HENRY', cost: 7, rarity: 5, position: 'RB', rushOffense: 10, rushDefense: 1, passOffense: 2, passDefense: 1 },
-            { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 3, passDefense: 1 },
-            { name: 'COOK', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'KUPP', cost: 6, rarity: 5, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'KELCE', cost: 7, rarity: 6, position: 'TE', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'WATT', cost: 8, rarity: 6, position: 'DE', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
-        ];
+        this.playerDeck = CardDataProvider.getPlayerDeck();
         this.playerHand = [];
         this.playerDrawPile = [];
         this.playerDiscardPile = [];
@@ -57,23 +42,7 @@ class GameState {
         this.hasDiscardedThisRound = false;
         this.round = 1;
         
-        this.enemyDeck = [
-            { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB', rushOffense: 4, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'WILSON', cost: 6, rarity: 4, position: 'QB', rushOffense: 7, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB', rushOffense: 6, rushDefense: 1, passOffense: 7, passDefense: 1 },
-            { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB', rushOffense: 2, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'JONES', cost: 4, rarity: 3, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'JONES II', cost: 6, rarity: 4, position: 'RB', rushOffense: 8, rushDefense: 1, passOffense: 4, passDefense: 1 },
-            { name: 'MIXON', cost: 5, rarity: 4, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 3, passDefense: 1 },
-            { name: 'HILL', cost: 7, rarity: 6, position: 'WR', rushOffense: 3, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'CHASE', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'EVANS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE', rushOffense: 4, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'DONALD', cost: 8, rarity: 6, position: 'DT', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
-        ];
+        this.enemyDeck = CardDataProvider.getEnemyDeck();
 
         this.enemyHand = [];
         this.enemyDrawPile = [];
@@ -154,6 +123,8 @@ class GameState {
         };
         
         // Reset decks
+        this.playerDeck = CardDataProvider.getPlayerDeck();
+        this.enemyDeck = CardDataProvider.getEnemyDeck();
         this.generateInitialHand();
         this.generateEnemyDeck();
         
@@ -647,12 +618,6 @@ class GameState {
     }
 
     endRound(playerPower) {
-        // Debug logging - remove this after fixing the issue
-        console.log('=== ROUND', this.round, 'DEBUG ===');
-        console.log('Starting yards - Player:', this.playerYards, 'Enemy:', this.enemyYards);
-        console.log('Player field cards:', this.fieldCards.player);
-        console.log('Enemy field cards:', this.fieldCards.enemy);
-        
         // Use the new CombatEngine for all combat calculations
         const combatResult = CombatEngine.processCombatRound(
             this.fieldCards.player,
@@ -661,9 +626,6 @@ class GameState {
             this.enemyYards,
             this.round
         );
-        
-        console.log('Combat result:', combatResult);
-        console.log('=== END DEBUG ===');
 
         // Update game state with new yard values
         this.playerYards = combatResult.newPlayerYards;
