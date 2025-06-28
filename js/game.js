@@ -293,11 +293,11 @@ export class GameState {
                 <div class="card-rarity">${card.rarity}</div>
             </div>
             <div class="card-image">
-                <img src="./assets/images/mahomes-profile.png" 
-                     alt="${card.name}" 
+                <img src="${this.getPositionImagePath(card.position)}" 
+                     alt="${card.name} (${card.position})" 
                      class="card-photo"
                      loading="lazy"
-                     onerror="this.style.display='none'; this.parentNode.style.backgroundColor='#2c3e50';">
+                     onerror="this.src='./assets/images/mahomes-profile.png'; this.onerror=null;">
             </div>
             <div class="card-name">${card.name}</div>
         `;
@@ -336,8 +336,19 @@ export class GameState {
         const fieldCard = document.createElement('div');
         fieldCard.className = `field-card ${type}`;
         fieldCard.innerHTML = `
-            <div style="font-size: clamp(6px, 1.5vw, 8px); margin-bottom: 2px;">${card.position || ''}</div>
-            <div>${card.name}</div>
+            <div class="field-card-header">
+                <div class="field-card-cost">${card.cost}</div>
+                <div class="field-position-badge">${card.position}</div>
+                <div class="field-card-rarity">${card.rarity}</div>
+            </div>
+            <div class="field-card-image">
+                <img src="${this.getPositionImagePath(card.position)}" 
+                     alt="${card.name} (${card.position})" 
+                     class="field-card-photo"
+                     loading="lazy"
+                     onerror="this.src='./assets/images/mahomes-profile.png'; this.onerror=null;">
+            </div>
+            <div class="field-card-name">${card.name}</div>
         `;
         return fieldCard;
     }
@@ -818,6 +829,33 @@ export class GameState {
                 message.parentNode.removeChild(message);
             }
         }, 3000);
+    }
+
+    getPositionImagePath(position) {
+        // Map card positions to their corresponding image files
+        const positionImages = {
+            'QB': 'qb.png',
+            'RB': 'rb.png', 
+            'WR': 'wr.png',
+            'TE': 'te.png',
+            'DE': 'de.png',
+            'DT': 'dt.png',
+            'LB': 'lb.png',
+            'CB': 'cb.png',
+            'S': 's.png'
+        };
+        
+        // Normalize position to uppercase to handle any case variations
+        const normalizedPosition = position ? position.toString().toUpperCase() : '';
+        const imageFile = positionImages[normalizedPosition];
+        
+        if (imageFile) {
+            return `./assets/images/${imageFile}`;
+        }
+        
+        // Fallback to mahomes image if position not found
+        console.warn(`Position image not found for: ${position}, using fallback`);
+        return './assets/images/mahomes-profile.png';
     }
 
     updateUI() {

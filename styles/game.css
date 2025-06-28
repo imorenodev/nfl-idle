@@ -95,20 +95,24 @@ body {
 .field-card {
     width: clamp(40px, 12vw, 50px);
     height: clamp(56px, 16vw, 70px);
-    background: #fff;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.3);
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    font-size: clamp(8px, 2vw, 10px);
+    justify-content: space-between;
+    font-size: clamp(6px, 1.5vw, 8px);
     font-weight: bold;
-    color: #333;
+    color: white;
     cursor: pointer;
     transition: all 0.3s ease;
     transform-style: preserve-3d;
     margin: 1px;
+    padding: clamp(2px, 1vw, 3px);
+    border: 1px solid transparent;
+    position: relative;
+    overflow: hidden;
 }
 
 .field-card:hover {
@@ -124,6 +128,90 @@ body {
 .field-card.player {
     background: linear-gradient(135deg, #4ecdc4, #44a08d);
     color: white;
+}
+
+/* Field Card Components */
+.field-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: clamp(1px, 0.5vw, 2px);
+}
+
+.field-card-cost {
+    width: clamp(10px, 2.5vw, 12px);
+    height: clamp(10px, 2.5vw, 12px);
+    background: #f39c12;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(5px, 1.2vw, 6px);
+    font-weight: bold;
+    color: white;
+}
+
+.field-card-rarity {
+    width: clamp(10px, 2.5vw, 12px);
+    height: clamp(10px, 2.5vw, 12px);
+    background: #e74c3c;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: clamp(5px, 1.2vw, 6px);
+    font-weight: bold;
+    color: white;
+}
+
+.field-position-badge {
+    background: rgba(255,255,255,0.9);
+    color: #333;
+    font-size: clamp(4px, 1vw, 5px);
+    padding: 1px 2px;
+    border-radius: 2px;
+    font-weight: bold;
+    min-width: clamp(10px, 2.5vw, 12px);
+    text-align: center;
+}
+
+.field-card-image {
+    width: 100%;
+    flex: 1;
+    background: linear-gradient(45deg, #2c3e50, #3498db);
+    border-radius: clamp(3px, 1vw, 4px);
+    margin-bottom: clamp(1px, 0.5vw, 2px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    min-height: 0;
+}
+
+.field-card-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: clamp(2px, 0.8vw, 3px);
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+}
+
+.field-card:hover .field-card-photo {
+    opacity: 1;
+}
+
+.field-card-name {
+    font-size: clamp(5px, 1.2vw, 7px);
+    font-weight: bold;
+    text-align: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    width: 100%;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .hand-section {
