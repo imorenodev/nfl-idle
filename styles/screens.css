@@ -1,0 +1,470 @@
+/* Screens.css - Styles for title screen, game map, and team selection */
+
+/* Title Screen Styles */
+.title-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #1e3c72 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.title-screen.screen-enter {
+    opacity: 1;
+}
+
+.title-content {
+    text-align: center;
+    color: white;
+    max-width: 600px;
+    padding: 20px;
+}
+
+.game-logo {
+    margin-bottom: 60px;
+}
+
+.game-title {
+    font-size: clamp(2.5rem, 8vw, 4rem);
+    font-weight: bold;
+    text-shadow: 3px 3px 6px rgba(0,0,0,0.5);
+    margin-bottom: 10px;
+    background: linear-gradient(45deg, #FFB612, #FF6B35);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.game-subtitle {
+    font-size: clamp(1rem, 3vw, 1.5rem);
+    opacity: 0.9;
+    margin-bottom: 0;
+}
+
+.title-menu {
+    margin-bottom: 40px;
+}
+
+.menu-button {
+    background: linear-gradient(135deg, #FF6B35, #F7931E);
+    border: none;
+    border-radius: 50px;
+    padding: 20px 60px;
+    font-size: clamp(1.2rem, 4vw, 1.8rem);
+    font-weight: bold;
+    color: white;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 25px rgba(255, 107, 53, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin: 0 auto;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.menu-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 35px rgba(255, 107, 53, 0.4);
+    background: linear-gradient(135deg, #FF7B45, #F8A31E);
+}
+
+.menu-button:active {
+    transform: translateY(-1px);
+}
+
+.button-icon {
+    font-size: 1.2em;
+}
+
+.title-footer {
+    opacity: 0.7;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
+}
+
+/* Game Map Screen Styles */
+.game-map-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #0f4c3a 0%, #2d5a3d 50%, #0f4c3a 100%);
+    display: none;
+    flex-direction: column;
+    z-index: 1000;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+.game-map-screen.screen-enter {
+    opacity: 1;
+}
+
+.map-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.3);
+    border-bottom: 2px solid rgba(255,255,255,0.1);
+}
+
+.player-team-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.team-logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 14px;
+    color: white;
+    border: 3px solid rgba(255,255,255,0.3);
+}
+
+.team-details h2 {
+    margin: 0;
+    color: white;
+    font-size: 1.5rem;
+}
+
+.team-record {
+    margin: 5px 0 0 0;
+    color: #FFB612;
+    font-weight: bold;
+}
+
+.map-title {
+    text-align: center;
+    color: white;
+}
+
+.map-title h1 {
+    margin: 0;
+    font-size: clamp(1.5rem, 4vw, 2.5rem);
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+}
+
+.season-progress {
+    margin: 5px 0 0 0;
+    opacity: 0.8;
+    font-size: 1rem;
+}
+
+.battle-path {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+}
+
+.battles-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+.battle-node {
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 20px;
+    text-align: center;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer;
+}
+
+.battle-node.available {
+    background: rgba(76, 175, 80, 0.2);
+    border-color: #4CAF50;
+    box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+}
+
+.battle-node.available:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+}
+
+.battle-node.locked {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.battle-node.playoff {
+    background: rgba(255, 193, 7, 0.2);
+    border-color: #FFC107;
+}
+
+.battle-node.superbowl {
+    background: rgba(156, 39, 176, 0.2);
+    border-color: #9C27B0;
+}
+
+.battle-number {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: white;
+    margin-bottom: 10px;
+}
+
+.enemy-team {
+    margin-bottom: 15px;
+}
+
+.enemy-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: white;
+    font-size: 12px;
+}
+
+.enemy-name {
+    color: white;
+    font-weight: bold;
+    font-size: 1rem;
+}
+
+.battle-status {
+    font-size: 1.5rem;
+    margin-bottom: 10px;
+}
+
+.battle-title {
+    color: #FFB612;
+    font-weight: bold;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.map-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: rgba(0,0,0,0.3);
+    border-top: 2px solid rgba(255,255,255,0.1);
+}
+
+.map-button {
+    background: linear-gradient(135deg, #666, #888);
+    border: none;
+    border-radius: 25px;
+    padding: 12px 24px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.map-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+
+.map-stats {
+    display: flex;
+    gap: 20px;
+}
+
+.stat {
+    color: white;
+    font-weight: bold;
+}
+
+/* Team Selection Modal Styles */
+.team-selection-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 20px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 80vh;
+    overflow: hidden;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.close-modal {
+    background: none;
+    border: none;
+    font-size: 2rem;
+    color: white;
+    cursor: pointer;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.close-modal:hover {
+    background: rgba(255,255,255,0.2);
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.conference-tabs {
+    display: flex;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: #f0f0f0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 15px;
+    border: none;
+    background: #f0f0f0;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.tab-button.active {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+}
+
+.tab-button:hover:not(.active) {
+    background: #e0e0e0;
+}
+
+.teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+    gap: 15px;
+}
+
+.team-card {
+    background: white;
+    border: 2px solid #e0e0e0;
+    border-radius: 15px;
+    padding: 15px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.team-card:hover {
+    border-color: #1e3c72;
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.team-card .team-logo {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 10px;
+    font-size: 12px;
+}
+
+.team-card .team-name {
+    font-weight: bold;
+    color: #333;
+    font-size: 0.9rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .map-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+
+    .battles-container {
+        grid-template-columns: 1fr;
+    }
+
+    .teams-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    .modal-content {
+        width: 95%;
+        margin: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .menu-button {
+        padding: 15px 40px;
+        font-size: 1.2rem;
+    }
+
+    .game-title {
+        font-size: 2rem;
+    }
+
+    .teams-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

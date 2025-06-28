@@ -80,7 +80,7 @@ export class CombatEngine {
      * Calculate yards gained/lost based on team matchup
      * @param {Object} playerStats - Player team statistics
      * @param {Object} enemyStats - Enemy team statistics
-     * @returns {Object} Combat result with yard gains
+     * @returns {Object} Combat result with yard gains and detailed breakdowns
      */
     static calculateCombatResult(playerStats, enemyStats) {
         let playerGain = 0;
@@ -88,35 +88,86 @@ export class CombatEngine {
         let playerOffenseType = 'None';
         let enemyOffenseType = 'None';
 
+        // Calculate detailed breakdowns for player
+        const playerRushDiff = playerStats.rushOffense - enemyStats.rushDefense;
+        const playerPassDiff = playerStats.passOffense - enemyStats.passDefense;
+        
+        const playerBreakdown = {
+            rushOffense: playerStats.rushOffense,
+            passOffense: playerStats.passOffense,
+            enemyRushDefense: enemyStats.rushDefense,
+            enemyPassDefense: enemyStats.passDefense,
+            rushDiff: playerRushDiff,
+            passDiff: playerPassDiff,
+            hasQB: playerStats.hasQB
+        };
+
+        // Calculate detailed breakdowns for enemy
+        const enemyRushDiff = enemyStats.rushOffense - playerStats.rushDefense;
+        const enemyPassDiff = enemyStats.passOffense - playerStats.passDefense;
+        
+        const enemyBreakdown = {
+            rushOffense: enemyStats.rushOffense,
+            passOffense: enemyStats.passOffense,
+            playerRushDefense: playerStats.rushDefense,
+            playerPassDefense: playerStats.passDefense,
+            rushDiff: enemyRushDiff,
+            passDiff: enemyPassDiff,
+            hasQB: enemyStats.hasQB
+        };
+
         // Player yards calculation - can only gain offensive yards with QB
         if (playerStats.hasQB) {
-            const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
-            const passDiff = playerStats.passOffense - enemyStats.passDefense;
-            
             // Take the better of the two offensive approaches
-            if (rushDiff >= passDiff) {
-                playerGain = rushDiff;
+            if (playerRushDiff >= playerPassDiff) {
+                playerGain = playerRushDiff;
                 playerOffenseType = 'Rush';
             } else {
-                playerGain = passDiff;
+                playerGain = playerPassDiff;
                 playerOffenseType = 'Pass';
             }
+            console.log(`Player has QB: ${playerOffenseType} = ${playerGain} yards`);
+        } else {
+            console.log(`Player has NO QB: Defense only, playerGain = ${playerGain}`);
         }
 
         // Enemy yards calculation - same rules apply
         if (enemyStats.hasQB) {
-            const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
-            const passDiff = enemyStats.passOffense - playerStats.passDefense;
-            
             // Take the better of the two offensive approaches
-            if (rushDiff >= passDiff) {
-                enemyGain = rushDiff;
+            if (enemyRushDiff >= enemyPassDiff) {
+                enemyGain = enemyRushDiff;
                 enemyOffenseType = 'Rush';
             } else {
-                enemyGain = passDiff;
+                enemyGain = enemyPassDiff;
                 enemyOffenseType = 'Pass';
             }
+            console.log(`Enemy has QB: ${enemyOffenseType} = ${enemyGain} yards`);
+        } else {
+            console.log(`Enemy has NO QB: Defense only, enemyGain = ${enemyGain}`);
         }
+
+        // Check for defensive dominance scenarios
+        const playerDefensiveDominance = this.checkDefensiveDominance(playerStats, enemyStats);
+        const enemyDefensiveDominance = this.checkDefensiveDominance(enemyStats, playerStats);
+
+        // Apply defensive dominance penalties
+        if (playerDefensiveDominance.isDominant) {
+            // Player defense dominates enemy offense
+            enemyGain = playerDefensiveDominance.yardLoss; // Force the yard loss
+            enemyOffenseType = 'Defensive Loss';
+            console.log(`Player defensive dominance: Enemy forced to ${playerDefensiveDominance.yardLoss} yards`);
+        }
+
+        if (enemyDefensiveDominance.isDominant) {
+            // Enemy defense dominates player offense  
+            playerGain = enemyDefensiveDominance.yardLoss; // Force the yard loss
+            playerOffenseType = 'Defensive Loss';
+            console.log(`Enemy defensive dominance: Player forced to ${enemyDefensiveDominance.yardLoss} yards`);
+        }
+
+        // Update breakdowns with defensive dominance info
+        playerBreakdown.defensiveDominance = enemyDefensiveDominance;
+        enemyBreakdown.defensiveDominance = playerDefensiveDominance;
 
         return {
             playerGain,
@@ -124,7 +175,56 @@ export class CombatEngine {
             playerOffenseType,
             enemyOffenseType,
             playerStats,
-            enemyStats
+            enemyStats,
+            playerBreakdown,
+            enemyBreakdown
+        };
+    }
+
+    /**
+     * Check if a team has defensive dominance over the opponent
+     * @param {Object} defensiveTeamStats - Stats of the defending team
+     * @param {Object} offensiveTeamStats - Stats of the offensive team
+     * @returns {Object} Defensive dominance result
+     */
+    static checkDefensiveDominance(defensiveTeamStats, offensiveTeamStats) {
+        const defRush = defensiveTeamStats.rushDefense;
+        const defPass = defensiveTeamStats.passDefense;
+        const offRush = offensiveTeamStats.rushOffense;
+        const offPass = offensiveTeamStats.passOffense;
+
+        console.log(`Checking defensive dominance: Def Rush ${defRush} vs Off Rush ${offRush}, Def Pass ${defPass} vs Off Pass ${offPass}`);
+
+        // Check if defense dominates BOTH rush and pass offense
+        const rushDominance = defRush > offRush;
+        const passDominance = defPass > offPass;
+
+        if (rushDominance && passDominance) {
+            // Calculate yard loss based on the greater defensive advantage
+            const rushDefensiveAdvantage = defRush - offRush;
+            const passDefensiveAdvantage = defPass - offPass;
+            const maxDefensiveAdvantage = Math.max(rushDefensiveAdvantage, passDefensiveAdvantage);
+            
+            console.log(`DEFENSIVE DOMINANCE: Rush advantage ${rushDefensiveAdvantage}, Pass advantage ${passDefensiveAdvantage}, Max ${maxDefensiveAdvantage}`);
+            
+            return {
+                isDominant: true,
+                yardLoss: -maxDefensiveAdvantage,
+                rushDominance: rushDefensiveAdvantage,
+                passDominance: passDefensiveAdvantage,
+                maxAdvantage: maxDefensiveAdvantage,
+                dominanceType: rushDefensiveAdvantage >= passDefensiveAdvantage ? 'Rush Defense' : 'Pass Defense'
+            };
+        }
+
+        console.log(`No defensive dominance: Rush dom ${rushDominance}, Pass dom ${passDominance}`);
+        return {
+            isDominant: false,
+            yardLoss: 0,
+            rushDominance: defRush - offRush,
+            passDominance: defPass - offPass,
+            maxAdvantage: 0,
+            dominanceType: null
         };
     }
 
@@ -170,8 +270,12 @@ export class CombatEngine {
     static checkGameOver(playerYards, enemyYards) {
         const { MIN, MAX } = COMBAT_CALCULATION.YARD_BOUNDS;
         
+        // Debug logging
+        console.log(`CombatEngine.checkGameOver: Player=${playerYards}, Enemy=${enemyYards}, MIN=${MIN}, MAX=${MAX}`);
+        
         // Player reaches 100 yards - Player wins by touchdown
         if (playerYards >= MAX) {
+            console.log('Game Over: Player Touchdown');
             return { 
                 isGameOver: true, 
                 winner: 'player', 
@@ -182,6 +286,7 @@ export class CombatEngine {
         
         // Enemy reaches 100 yards - Player loses (enemy touchdown)
         if (enemyYards >= MAX) {
+            console.log('Game Over: Enemy Touchdown');
             return { 
                 isGameOver: true, 
                 winner: 'enemy', 
@@ -192,6 +297,7 @@ export class CombatEngine {
         
         // Player reaches 0 yards - Player loses by safety
         if (playerYards <= MIN) {
+            console.log('Game Over: Player Safety (Enemy wins)');
             return { 
                 isGameOver: true, 
                 winner: 'enemy', 
@@ -202,6 +308,7 @@ export class CombatEngine {
         
         // Enemy reaches 0 yards - Player wins by safety
         if (enemyYards <= MIN) {
+            console.log('Game Over: Enemy Safety (Player wins)');
             return { 
                 isGameOver: true, 
                 winner: 'player', 
@@ -210,6 +317,7 @@ export class CombatEngine {
             };
         }
         
+        console.log('Game continues - no game over conditions met');
         return { isGameOver: false, winner: null, condition: null, type: null };
     }
 
@@ -220,18 +328,25 @@ export class CombatEngine {
      * @returns {string} Formatted message
      */
     static generateCombatMessage(combatResult, round) {
-        const { playerGain, enemyGain, playerOffenseType, enemyOffenseType, playerStats, enemyStats } = combatResult;
+        const { playerGain, enemyGain, playerOffenseType, enemyOffenseType, playerStats, enemyStats, playerBreakdown, enemyBreakdown } = combatResult;
         
         let message = `Round ${round} Complete!\n`;
 
         if (playerStats.hasQB) {
-            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
+            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)`;
+            if (playerBreakdown.defensiveDominance && playerBreakdown.defensiveDominance.isDominant) {
+                message += ` [Defensive Dominance!]`;
+            }
+            message += `\n`;
         } else {
             message += `You: No QB - Defense only (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
         }
 
         if (enemyStats.hasQB) {
             message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
+            if (enemyBreakdown.defensiveDominance && enemyBreakdown.defensiveDominance.isDominant) {
+                message += ` [Defensive Dominance!]`;
+            }
         } else {
             message += `Enemy: No QB - Defense only (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
         }
