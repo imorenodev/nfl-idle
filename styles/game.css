@@ -571,6 +571,64 @@ body {
     color: #666;
 }
 
+.team-result {
+    margin-bottom: 10px;
+}
+
+.power-breakdown {
+    margin-top: 8px;
+    padding: 8px;
+    background: rgba(0,0,0,0.05);
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.breakdown-row {
+    margin-bottom: 4px;
+    font-family: monospace;
+    color: #555;
+}
+
+.breakdown-result {
+    margin-top: 6px;
+    font-weight: bold;
+    color: #333;
+}
+
+.defensive-dominance {
+    margin: 8px 0;
+    padding: 8px;
+    background: rgba(244, 67, 54, 0.1);
+    border: 1px solid rgba(244, 67, 54, 0.3);
+    border-radius: 4px;
+    color: #d32f2f;
+}
+
+.dominance-details {
+    margin: 4px 0;
+    font-size: 11px;
+    font-family: monospace;
+    color: #666;
+}
+
+.dominance-penalty {
+    margin-top: 6px;
+    font-weight: bold;
+    color: #d32f2f;
+}
+
+.log-divider {
+    margin: 10px 0;
+    border: none;
+    border-top: 1px solid #ddd;
+}
+
+.modal-body {
+    padding: 20px;
+    max-height: 70vh;
+    overflow-y: auto;
+}
+
 /* Handle very small screens */
 @media (max-height: 600px) {
     :root {

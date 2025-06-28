@@ -20,7 +20,7 @@ import { CombatEngine } from './core/CombatEngine.js';
 import { gameOverManager } from './core/GameOverManager.js';
 import { CardDataProvider } from './data/CardDataProvider.js';
 
-class GameState {
+export class GameState {
     constructor() {
         this.selectedCards = new Set();
         this.playerYards = 20;
@@ -50,6 +50,8 @@ class GameState {
 
         this.gameLog = [];
         this.lastRoundResult = null;
+        this.onGameComplete = null;
+        this.gameOverManager = gameOverManager;
     }
 
     initializeHealthBars() {
@@ -82,14 +84,8 @@ class GameState {
     }
 
     setupGameOverManager() {
-        // Set up game over manager callbacks
-        gameOverManager.setOnGameRestart(() => {
-            this.restartGame();
-        });
-        
-        gameOverManager.setOnGameExit(() => {
-            this.exitToMainMenu();
-        });
+        // GameOverManager callbacks will be set up by the app
+        // This method is kept for compatibility but does nothing
     }
 
     checkGameOverConditions() {
@@ -104,13 +100,25 @@ class GameState {
         };
         
         gameOverManager.handleGameOver(gameOverResult, gameState);
+        
+        // Game over is now handled entirely by GameOverManager
+        // No need to call onGameComplete callback
+    }
+
+    setOnGameComplete(callback) {
+        this.onGameComplete = callback;
+    }
+
+    setupForNewBattle() {
+        // Reset for a new battle while keeping core setup
+        this.restartGame();
     }
 
     restartGame() {
         // Reset all game state
         this.selectedCards = new Set();
-        this.playerYards = 10;
-        this.enemyYards = 0;
+        this.playerYards = 20;
+        this.enemyYards = 20;
         this.round = 1;
         this.hasDiscardedThisRound = false;
         this.gameLog = [];
@@ -285,10 +293,11 @@ class GameState {
                 <div class="card-rarity">${card.rarity}</div>
             </div>
             <div class="card-image">
-                <img src="https://storage.googleapis.com/images.pricecharting.com/jsalckgalouyd75k/1600.jpg" 
+                <img src="./assets/images/mahomes-profile.png" 
                      alt="${card.name}" 
                      class="card-photo"
-                     loading="lazy">
+                     loading="lazy"
+                     onerror="this.style.display='none'; this.parentNode.style.backgroundColor='#2c3e50';">
             </div>
             <div class="card-name">${card.name}</div>
         `;
@@ -713,17 +722,31 @@ class GameState {
             playerYards: this.playerYards,
             enemyYards: this.enemyYards,
             playerOffenseType: combatResult.playerOffenseType,
-            enemyOffenseType: combatResult.enemyOffenseType
+            enemyOffenseType: combatResult.enemyOffenseType,
+            playerBreakdown: combatResult.playerBreakdown,
+            enemyBreakdown: combatResult.enemyBreakdown
         };
 
         this.addToGameLog(roundData);
         this.updateLastRoundOutcome(roundData);
 
-        // Check for game over conditions using the combat result
-        if (combatResult.isGameOver) {
+        // Always check for game over conditions after updating yards
+        // This ensures we catch any safety conditions that might have been missed
+        const gameOverCheck = CombatEngine.checkGameOver(this.playerYards, this.enemyYards);
+        
+        // Debug logging for yard tracking
+        console.log(`Round ${this.round} complete: Player ${this.playerYards}/100, Enemy ${this.enemyYards}/100`);
+        console.log(`Combat result isGameOver: ${combatResult.isGameOver}, Manual check isGameOver: ${gameOverCheck.isGameOver}`);
+        
+        if (combatResult.isGameOver || gameOverCheck.isGameOver) {
+            // Use the more complete result (combat result includes more context)
+            const finalGameOverResult = combatResult.isGameOver ? combatResult : gameOverCheck;
+            
+            console.log(`Game Over detected! Type: ${finalGameOverResult.type}, Winner: ${finalGameOverResult.winner}, Condition: ${finalGameOverResult.condition}`);
+            
             // Handle game over - don't start new round
             setTimeout(() => {
-                this.handleGameOver(combatResult);
+                this.handleGameOver(finalGameOverResult);
             }, 3000);
         } else {
             // Continue game - start new round
@@ -829,6 +852,8 @@ class GameState {
             enemyYards: roundData.enemyYards,
             playerOffenseType: roundData.playerOffenseType,
             enemyOffenseType: roundData.enemyOffenseType,
+            playerBreakdown: roundData.playerBreakdown,
+            enemyBreakdown: roundData.enemyBreakdown,
             timestamp: new Date().toLocaleTimeString()
         });
     }
@@ -863,12 +888,82 @@ class GameState {
                 if (entry.playerGain > entry.enemyGain) entryClass = 'player-win';
                 else if (entry.enemyGain > entry.playerGain) entryClass = 'enemy-win';
                 
+                const playerBreakdown = entry.playerBreakdown;
+                const enemyBreakdown = entry.enemyBreakdown;
+                
                 return `
                     <div class="log-entry ${entryClass}">
                         <div class="log-round">Round ${entry.round} - ${entry.timestamp}</div>
                         <div class="log-details">
-                            You: ${entry.playerOffenseType} attack (+${entry.playerGain} yards) - Total: ${entry.playerYards}<br>
-                            Enemy: ${entry.enemyOffenseType} attack (+${entry.enemyGain} yards) - Total: ${entry.enemyYards}
+                            <div class="team-result">
+                                <strong>You: ${entry.playerOffenseType} attack (+${entry.playerGain} yards) - Total: ${entry.playerYards}</strong>
+                                ${playerBreakdown ? `
+                                <div class="power-breakdown">
+                                    ${playerBreakdown.hasQB ? `
+                                    <div class="breakdown-row">
+                                        📊 Rush: ${playerBreakdown.rushOffense} offense - ${playerBreakdown.enemyRushDefense} defense = ${playerBreakdown.rushDiff > 0 ? '+' : ''}${playerBreakdown.rushDiff}
+                                    </div>
+                                    <div class="breakdown-row">
+                                        📊 Pass: ${playerBreakdown.passOffense} offense - ${playerBreakdown.enemyPassDefense} defense = ${playerBreakdown.passDiff > 0 ? '+' : ''}${playerBreakdown.passDiff}
+                                    </div>
+                                    ${playerBreakdown.defensiveDominance && playerBreakdown.defensiveDominance.isDominant ? `
+                                    <div class="defensive-dominance">
+                                        🛡️ <strong>Defensive Dominance!</strong> Enemy ${playerBreakdown.defensiveDominance.dominanceType} overpowers your offense
+                                        <div class="dominance-details">
+                                            Enemy Rush Def: ${playerBreakdown.enemyRushDefense} > Your Rush Off: ${playerBreakdown.rushOffense} (+${playerBreakdown.defensiveDominance.rushDominance})
+                                        </div>
+                                        <div class="dominance-details">
+                                            Enemy Pass Def: ${playerBreakdown.enemyPassDefense} > Your Pass Off: ${playerBreakdown.passOffense} (+${playerBreakdown.defensiveDominance.passDominance})
+                                        </div>
+                                        <div class="dominance-penalty">
+                                            💀 Forced yard loss: ${playerBreakdown.defensiveDominance.yardLoss} yards
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                    <div class="breakdown-result">
+                                        ⚡ Final result: ${entry.playerOffenseType} (${entry.playerGain > 0 ? '+' : ''}${entry.playerGain} yards)
+                                    </div>
+                                    ` : `
+                                    <div class="breakdown-result">❌ No QB - Defense only</div>
+                                    `}
+                                </div>
+                                ` : ''}
+                            </div>
+                            <hr class="log-divider">
+                            <div class="team-result">
+                                <strong>Enemy: ${entry.enemyOffenseType} attack (+${entry.enemyGain} yards) - Total: ${entry.enemyYards}</strong>
+                                ${enemyBreakdown ? `
+                                <div class="power-breakdown">
+                                    ${enemyBreakdown.hasQB ? `
+                                    <div class="breakdown-row">
+                                        📊 Rush: ${enemyBreakdown.rushOffense} offense - ${enemyBreakdown.playerRushDefense} defense = ${enemyBreakdown.rushDiff > 0 ? '+' : ''}${enemyBreakdown.rushDiff}
+                                    </div>
+                                    <div class="breakdown-row">
+                                        📊 Pass: ${enemyBreakdown.passOffense} offense - ${enemyBreakdown.playerPassDefense} defense = ${enemyBreakdown.passDiff > 0 ? '+' : ''}${enemyBreakdown.passDiff}
+                                    </div>
+                                    ${enemyBreakdown.defensiveDominance && enemyBreakdown.defensiveDominance.isDominant ? `
+                                    <div class="defensive-dominance">
+                                        🛡️ <strong>Defensive Dominance!</strong> Your ${enemyBreakdown.defensiveDominance.dominanceType} overpowers enemy offense
+                                        <div class="dominance-details">
+                                            Your Rush Def: ${enemyBreakdown.playerRushDefense} > Enemy Rush Off: ${enemyBreakdown.rushOffense} (+${enemyBreakdown.defensiveDominance.rushDominance})
+                                        </div>
+                                        <div class="dominance-details">
+                                            Your Pass Def: ${enemyBreakdown.playerPassDefense} > Enemy Pass Off: ${enemyBreakdown.passOffense} (+${enemyBreakdown.defensiveDominance.passDominance})
+                                        </div>
+                                        <div class="dominance-penalty">
+                                            💀 Forced yard loss: ${enemyBreakdown.defensiveDominance.yardLoss} yards
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                    <div class="breakdown-result">
+                                        ⚡ Final result: ${entry.enemyOffenseType} (${entry.enemyGain > 0 ? '+' : ''}${entry.enemyGain} yards)
+                                    </div>
+                                    ` : `
+                                    <div class="breakdown-result">❌ No QB - Defense only</div>
+                                    `}
+                                </div>
+                                ` : ''}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -907,10 +1002,7 @@ class GameState {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    const game = new GameState();
-    game.init();
-});
+// Game initialization is now handled by app.js
 
 document.addEventListener('DOMContentLoaded', () => {
     const fieldSection = document.querySelector('.field-section');
