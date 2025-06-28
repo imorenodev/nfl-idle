@@ -15,33 +15,22 @@ window.addEventListener('orientationchange', () => {
     setTimeout(setVH, 100);
 });
 
+// Import game over functionality
+import { CombatEngine } from './core/CombatEngine.js';
+import { gameOverManager } from './core/GameOverManager.js';
+import { CardDataProvider } from './data/CardDataProvider.js';
+
 class GameState {
     constructor() {
         this.selectedCards = new Set();
-        this.playerYards = 10;
-        this.enemyYards = 0;
+        this.playerYards = 20;
+        this.enemyYards = 20;
 
         // Health bar instances
         this.playerYardsBar = null;
         this.enemyYardsBar = null;
 
-        this.playerDeck = [
-            { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'BURROW', cost: 6, rarity: 5, position: 'QB', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'HURTS', cost: 5, rarity: 4, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 7, passDefense: 1 },
-            { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'HENRY', cost: 7, rarity: 5, position: 'RB', rushOffense: 10, rushDefense: 1, passOffense: 2, passDefense: 1 },
-            { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 3, passDefense: 1 },
-            { name: 'COOK', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'KUPP', cost: 6, rarity: 5, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'KELCE', cost: 7, rarity: 6, position: 'TE', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'WATT', cost: 8, rarity: 6, position: 'DE', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
-        ];
+        this.playerDeck = CardDataProvider.getPlayerDeck();
         this.playerHand = [];
         this.playerDrawPile = [];
         this.playerDiscardPile = [];
@@ -53,23 +42,7 @@ class GameState {
         this.hasDiscardedThisRound = false;
         this.round = 1;
         
-        this.enemyDeck = [
-            { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB', rushOffense: 4, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'WILSON', cost: 6, rarity: 4, position: 'QB', rushOffense: 7, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB', rushOffense: 6, rushDefense: 1, passOffense: 7, passDefense: 1 },
-            { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB', rushOffense: 2, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'JONES', cost: 4, rarity: 3, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'JONES II', cost: 6, rarity: 4, position: 'RB', rushOffense: 8, rushDefense: 1, passOffense: 4, passDefense: 1 },
-            { name: 'MIXON', cost: 5, rarity: 4, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
-            { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 3, passDefense: 1 },
-            { name: 'HILL', cost: 7, rarity: 6, position: 'WR', rushOffense: 3, rushDefense: 1, passOffense: 10, passDefense: 1 },
-            { name: 'CHASE', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
-            { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'EVANS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE', rushOffense: 4, rushDefense: 1, passOffense: 8, passDefense: 1 },
-            { name: 'DONALD', cost: 8, rarity: 6, position: 'DT', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
-        ];
+        this.enemyDeck = CardDataProvider.getEnemyDeck();
 
         this.enemyHand = [];
         this.enemyDrawPile = [];
@@ -97,6 +70,7 @@ class GameState {
         this.generateInitialHand();
         this.generateEnemyDeck();
         this.setupEventListeners();
+        this.setupGameOverManager();
         
         // Initialize health bars after DOM is ready
         setTimeout(() => {
@@ -105,6 +79,71 @@ class GameState {
         
         this.startNewRound();
         this.updateUI();
+    }
+
+    setupGameOverManager() {
+        // Set up game over manager callbacks
+        gameOverManager.setOnGameRestart(() => {
+            this.restartGame();
+        });
+        
+        gameOverManager.setOnGameExit(() => {
+            this.exitToMainMenu();
+        });
+    }
+
+    checkGameOverConditions() {
+        return CombatEngine.checkGameOver(this.playerYards, this.enemyYards);
+    }
+
+    handleGameOver(gameOverResult) {
+        const gameState = {
+            round: this.round,
+            playerYards: this.playerYards,
+            enemyYards: this.enemyYards
+        };
+        
+        gameOverManager.handleGameOver(gameOverResult, gameState);
+    }
+
+    restartGame() {
+        // Reset all game state
+        this.selectedCards = new Set();
+        this.playerYards = 10;
+        this.enemyYards = 0;
+        this.round = 1;
+        this.hasDiscardedThisRound = false;
+        this.gameLog = [];
+        this.lastRoundResult = null;
+        
+        // Clear field
+        this.fieldCards = {
+            player: [],
+            enemy: []
+        };
+        
+        // Reset decks
+        this.playerDeck = CardDataProvider.getPlayerDeck();
+        this.enemyDeck = CardDataProvider.getEnemyDeck();
+        this.generateInitialHand();
+        this.generateEnemyDeck();
+        
+        // Reset UI
+        this.playerYardsBar.setHealth(this.playerYards);
+        this.enemyYardsBar.setHealth(this.enemyYards);
+        
+        // Hide last round outcome
+        document.getElementById('lastRoundOutcome').style.display = 'none';
+        
+        // Start new game
+        this.startNewRound();
+        this.updateUI();
+    }
+
+    exitToMainMenu() {
+        // For now, just restart the game
+        // In the future, this would navigate to the title screen
+        this.restartGame();
     }
 
     generateInitialHand() {
@@ -134,10 +173,10 @@ class GameState {
 
         // Enemy AI: try to play a valid combination
         const enemySelection = [];
-        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0, DE: 0, DT: 0, LB: 0, CB: 0, S: 0 };
         let hasQB = false;
 
-        // First, try to find a QB (only one allowed)
+        // First, try to find a QB (only one allowed, but not required)
         const qbCard = this.enemyHand.find(card => card.position === 'QB');
         if (qbCard) {
             enemySelection.push(qbCard);
@@ -157,6 +196,11 @@ class GameState {
             if (card.position === 'RB' && positionCounts.RB >= 2) canAdd = false;
             else if (card.position === 'WR' && positionCounts.WR >= 3) canAdd = false;
             else if (card.position === 'TE' && positionCounts.TE >= 2) canAdd = false;
+            else if (card.position === 'DE' && positionCounts.DE >= 2) canAdd = false;
+            else if (card.position === 'DT' && positionCounts.DT >= 2) canAdd = false;
+            else if (card.position === 'LB' && positionCounts.LB >= 3) canAdd = false;
+            else if (card.position === 'CB' && positionCounts.CB >= 3) canAdd = false;
+            else if (card.position === 'S' && positionCounts.S >= 2) canAdd = false;
 
             if (canAdd) {
                 enemySelection.push(card);
@@ -237,11 +281,14 @@ class GameState {
         cardDiv.innerHTML = `
             <div class="card-header">
                 <div class="card-cost">${card.cost}</div>
+                <div class="position-badge">${card.position}</div>
                 <div class="card-rarity">${card.rarity}</div>
             </div>
             <div class="card-image">
-                <div class="position-badge">${card.position}</div>
-                ${card.name}
+                <img src="https://storage.googleapis.com/images.pricecharting.com/jsalckgalouyd75k/1600.jpg" 
+                     alt="${card.name}" 
+                     class="card-photo"
+                     loading="lazy">
             </div>
             <div class="card-name">${card.name}</div>
         `;
@@ -319,88 +366,142 @@ class GameState {
             return;
         }
 
-        // Validate position limits
-        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
-        let hasQB = false;
-        
-        this.selectedCards.forEach(cardId => {
-            const card = this.playerHand.find(c => c.id === cardId);
-            if (card) {
-                if (card.position === 'QB') {
-                    positionCounts.QB++;
-                    hasQB = true;
-                } else if (card.position === 'RB') positionCounts.RB++;
-                else if (card.position === 'WR') positionCounts.WR++;
-                else if (card.position === 'TE') positionCounts.TE++;
-            }
-        });
+        // Validate position limits using the new CombatEngine
+        const selectedCardObjects = Array.from(this.selectedCards).map(cardId => 
+            this.playerHand.find(c => c.id === cardId)
+        ).filter(card => card);
 
-        // Check position limits
-        if (positionCounts.QB > 1) {
-            this.showMessage("Only 1 QB allowed!");
+        const validation = CombatEngine.validateCardSelection(selectedCardObjects);
+        if (!validation.isValid) {
+            this.showMessage(validation.details || validation.error);
             return;
-        }
-        if (positionCounts.RB > 2) {
-            this.showMessage("Only 2 RBs allowed!");
-            return;
-        }
-        if (positionCounts.WR > 3) {
-            this.showMessage("Only 3 WRs allowed!");
-            return;
-        }
-        if (positionCounts.TE > 2) {
-            this.showMessage("Only 2 TEs allowed!");
-            return;
-        }
-        if (!hasQB) {
-            this.showMessage("You must play a QB to gain yards!");
         }
 
-        let totalPower = 0;
-        const playedCards = [];
+        // Disable buttons during animation
+        const playBtn = document.getElementById('playBtn');
+        const discardBtn = document.getElementById('discardBtn');
+        playBtn.disabled = true;
+        discardBtn.disabled = true;
+        playBtn.style.opacity = '0.5';
+        discardBtn.style.opacity = '0.5';
 
-        this.selectedCards.forEach(cardId => {
-            const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
-            if (cardIndex !== -1) {
-                const card = this.playerHand[cardIndex];
-                playedCards.push(cardIndex);
+        // Show message about what's happening
+        const playCount = this.selectedCards.size;
+        const discardCount = this.playerHand.length - this.selectedCards.size;
+        this.showMessage(`🏈 SNAP! Playing ${playCount} card${playCount !== 1 ? 's' : ''}, discarding ${discardCount} card${discardCount !== 1 ? 's' : ''}`);
+
+        // Step 1: Immediately distinguish selected vs unselected cards visually
+        this.highlightCardChoices();
+
+        // Step 2: Animate unselected cards being discarded (after brief delay to show the distinction)
+        setTimeout(() => {
+            this.animateUnselectedCardsDiscard();
+        }, 500);
+
+        // Step 3: Animate selected cards moving to field (after discard animation)
+        setTimeout(() => {
+            this.animateSelectedCardsToField();
+        }, 1000);
+
+        // Step 4: Process the round (after all animations)
+        setTimeout(() => {
+            this.processPlayedCards();
+        }, 1500);
+    }
+
+    highlightCardChoices() {
+        this.playerHand.forEach(card => {
+            if (card.element) {
+                // Remove existing state classes
+                card.element.classList.remove('to-be-played', 'to-be-discarded', 'selected');
                 
-                totalPower += card.cost + card.rarity;
-
-                this.fieldCards.player.push({
-                    name: card.name,
-                    position: card.position,
-                    cost: card.cost,
-                    rarity: card.rarity,
-                    rushOffense: card.rushOffense,
-                    rushDefense: card.rushDefense,
-                    passOffense: card.passOffense,
-                    passDefense: card.passDefense,
-                    id: `field-${Date.now()}-${Math.random()}`,
-                    element: null
-                });
-                
-                if (card.element) {
-                    card.element.style.transform = 'scale(0) rotate(180deg)';
-                    card.element.style.opacity = '0';
+                if (this.selectedCards.has(card.id)) {
+                    // Highlight selected cards (to be played)
+                    card.element.classList.add('to-be-played');
+                } else {
+                    // Highlight unselected cards (to be discarded)
+                    card.element.classList.add('to-be-discarded');
                 }
             }
         });
+    }
 
-        playedCards.sort((a, b) => b - a);
+    animateUnselectedCardsDiscard() {
+        const unselectedCards = this.playerHand.filter(card => !this.selectedCards.has(card.id));
         
-        setTimeout(() => {
-            playedCards.forEach(cardIndex => {
-                this.playerHand.splice(cardIndex, 1);
-            });
-            
-            this.discardRemainingHand();
-            
-            this.renderFieldCards();
-            this.endRound(totalPower);
-        }, 300);
+        unselectedCards.forEach((card, index) => {
+            if (card.element) {
+                setTimeout(() => {
+                    card.element.classList.remove('to-be-discarded');
+                    card.element.classList.add('being-discarded');
+                }, index * 50); // Stagger the animations
+            }
+        });
 
+        // Add unselected cards to discard pile
+        unselectedCards.forEach(card => {
+            this.playerDiscardPile.push({
+                name: card.name,
+                cost: card.cost,
+                rarity: card.rarity,
+                position: card.position,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense
+            });
+        });
+    }
+
+    animateSelectedCardsToField() {
+        const selectedCardObjects = Array.from(this.selectedCards).map(cardId => 
+            this.playerHand.find(c => c.id === cardId)
+        ).filter(card => card);
+
+        selectedCardObjects.forEach((card, index) => {
+            if (card.element) {
+                setTimeout(() => {
+                    card.element.classList.remove('to-be-played');
+                    card.element.classList.add('moving-to-field');
+                }, index * 100);
+            }
+
+            // Add to field cards
+            this.fieldCards.player.push({
+                name: card.name,
+                position: card.position,
+                cost: card.cost,
+                rarity: card.rarity,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense,
+                id: `field-${Date.now()}-${Math.random()}`,
+                element: null
+            });
+        });
+    }
+
+    processPlayedCards() {
+        // Remove all cards from hand (both played and discarded)
+        this.playerHand = [];
+        
+        // Clear selections
         this.selectedCards.clear();
+        
+        // Re-enable buttons
+        const playBtn = document.getElementById('playBtn');
+        const discardBtn = document.getElementById('discardBtn');
+        playBtn.disabled = false;
+        discardBtn.disabled = false;
+        playBtn.style.opacity = '1';
+        discardBtn.style.opacity = '1';
+        
+        // Render field with new cards
+        this.renderFieldCards();
+        
+        // Process the round
+        this.endRound(0); // totalPower parameter is not used in new CombatEngine
     }
 
     discardSelected() {
@@ -579,142 +680,70 @@ class GameState {
     }
 
     endRound(playerPower) {
-        // Calculate team stats
-        const playerStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
-        const enemyStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
-        
-        // Calculate player stats
-        this.fieldCards.player.forEach(card => {
-            playerStats.rushOffense += card.rushOffense || 0;
-            playerStats.rushDefense += card.rushDefense || 0;
-            playerStats.passOffense += card.passOffense || 0;
-            playerStats.passDefense += card.passDefense || 0;
-            if (card.position === 'QB') playerStats.hasQB = true;
-        });
-        
-        // Calculate enemy stats
-        this.fieldCards.enemy.forEach(card => {
-            enemyStats.rushOffense += card.rushOffense || 0;
-            enemyStats.rushDefense += card.rushDefense || 0;
-            enemyStats.passOffense += card.passOffense || 0;
-            enemyStats.passDefense += card.passDefense || 0;
-            if (card.position === 'QB') enemyStats.hasQB = true;
-        });
-        
-        // Calculate yard gains/losses
-        let playerGain = 0;
-        let enemyGain = 0;
+        // Use the new CombatEngine for all combat calculations
+        const combatResult = CombatEngine.processCombatRound(
+            this.fieldCards.player,
+            this.fieldCards.enemy,
+            this.playerYards,
+            this.enemyYards,
+            this.round
+        );
 
-        // Player yards calculation - can only gain offensive yards with QB
-        if (playerStats.hasQB) {
-            const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
-            const passDiff = playerStats.passOffense - enemyStats.passDefense;
-            
-            if (rushDiff > 0 || passDiff > 0) {
-                playerGain = Math.max(rushDiff, passDiff);
-            } else if (rushDiff < 0 && passDiff < 0) {
-                playerGain = Math.max(rushDiff, passDiff); // This will be negative
-            }
-        } else {
-            // No QB = no offensive yards, but can still get defensive "power points"
-            // This could be represented as preventing enemy gains rather than gaining yards yourself
-            // For now, player gains 0 offensive yards without QB
-            playerGain = 0;
-        }
-
-        // Enemy yards calculation - same rules apply
-        if (enemyStats.hasQB) {
-            const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
-            const passDiff = enemyStats.passOffense - playerStats.passDefense;
-            
-            if (rushDiff > 0 || passDiff > 0) {
-                enemyGain = Math.max(rushDiff, passDiff);
-            } else if (rushDiff < 0 && passDiff < 0) {
-                enemyGain = Math.max(rushDiff, passDiff); // This will be negative
-            }
-        } else {
-            // No QB = no offensive yards for enemy either
-            enemyGain = 0;
-        }
-                
-        // Store previous values
-        const prevPlayerYards = this.playerYards;
-        const prevEnemyYards = this.enemyYards;
-
-        // Calculate what the new yards would be
-        const newPlayerYards = this.playerYards + playerGain;
-        const newEnemyYards = this.enemyYards + enemyGain;
-
-        // Clamp to bounds (0-100)
-        this.playerYards = Math.max(0, Math.min(100, newPlayerYards));
-        this.enemyYards = Math.max(0, Math.min(100, newEnemyYards));
-
-        // Calculate the actual change that occurred (accounting for clamping)
-        const playerYardsToAdd = this.playerYards - prevPlayerYards;
-        const enemyYardsToAdd = this.enemyYards - prevEnemyYards;
+        // Update game state with new yard values
+        this.playerYards = combatResult.newPlayerYards;
+        this.enemyYards = combatResult.newEnemyYards;
 
         // Update health bars with the actual change
         if (this.playerYardsBar) {
-            this.playerYardsBar.add(playerYardsToAdd);
+            this.playerYardsBar.add(combatResult.actualPlayerChange);
         }
         if (this.enemyYardsBar) {
-            this.enemyYardsBar.add(enemyYardsToAdd);
+            this.enemyYardsBar.add(combatResult.actualEnemyChange);
         }
         
         this.updateUI();
         
-        // Create detailed message
-        const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
-        const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
-        
-        let message = `Round ${this.round} Complete!\n`;
-
-        if (playerStats.hasQB) {
-            const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
-            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
-        } else {
-            message += `You: No QB - No offensive yards (Defense only)\n`;
-        }
-
-        if (enemyStats.hasQB) {
-            const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
-            message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
-        } else {
-            message += `Enemy: No QB - No offensive yards (Defense only)`;
-        }
-        
-        this.showMessage(message);
+        // Show combat message
+        this.showMessage(combatResult.message);
         
         const roundData = {
             round: this.round,
-            playerGain: playerGain,
-            enemyGain: enemyGain,
+            playerGain: combatResult.playerGain,
+            enemyGain: combatResult.enemyGain,
             playerYards: this.playerYards,
             enemyYards: this.enemyYards,
-            playerOffenseType: playerOffenseType,
-            enemyOffenseType: enemyOffenseType
+            playerOffenseType: combatResult.playerOffenseType,
+            enemyOffenseType: combatResult.enemyOffenseType
         };
 
         this.addToGameLog(roundData);
         this.updateLastRoundOutcome(roundData);
 
-        setTimeout(() => {
-            this.clearField();
-            
-            this.hasDiscardedThisRound = false;
-            this.round++;
-            
-            this.startNewRound();
-        }, 3500);
-        
-        if (this.playerYards >= 100) {
-            setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 3000);
-        } else if (this.enemyYards >= 100) {
-            setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 3000);
+        // Check for game over conditions using the combat result
+        if (combatResult.isGameOver) {
+            // Handle game over - don't start new round
+            setTimeout(() => {
+                this.handleGameOver(combatResult);
+            }, 3000);
+        } else {
+            // Continue game - start new round
+            setTimeout(() => {
+                this.clearField();
+                
+                this.hasDiscardedThisRound = false;
+                this.round++;
+                
+                this.startNewRound();
+            }, 3500);
         }
     }
 
     startNewRound() {
+        // Check if game is over before starting new round
+        if (gameOverManager.getIsGameOver()) {
+            return;
+        }
+        
         this.drawPlayerCards(6);
         this.drawEnemyCards(6);
         
@@ -729,9 +758,9 @@ class GameState {
 
         let roundMessage = `Round ${this.round} starts! `;
         if (enemyHasQB) {
-            roundMessage += "Enemy has a QB and can gain yards. ";
+            roundMessage += "Enemy has a QB and can gain offensive yards. ";
         } else {
-            roundMessage += "Enemy has no QB - they cannot gain yards! ";
+            roundMessage += "Enemy has no QB - they can only gain defensive yards! ";
         }
         roundMessage += "Your turn!";
 
