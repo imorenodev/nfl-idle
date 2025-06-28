@@ -26,21 +26,21 @@ class GameState {
         this.enemyYardsBar = null;
 
         this.playerDeck = [
-            { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB' },
-            { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB' },
-            { name: 'BURROW', cost: 6, rarity: 5, position: 'QB' },
-            { name: 'HURTS', cost: 5, rarity: 4, position: 'QB' },
-            { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB' },
-            { name: 'HENRY', cost: 7, rarity: 5, position: 'RB' },
-            { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB' },
-            { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB' },
-            { name: 'COOK', cost: 4, rarity: 3, position: 'RB' },
-            { name: 'KUPP', cost: 6, rarity: 5, position: 'WR' },
-            { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR' },
-            { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR' },
-            { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR' },
-            { name: 'KELCE', cost: 7, rarity: 6, position: 'TE' },
-            { name: 'WATT', cost: 8, rarity: 6, position: 'DE' }
+            { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'BURROW', cost: 6, rarity: 5, position: 'QB', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'HURTS', cost: 5, rarity: 4, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 7, passDefense: 1 },
+            { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'HENRY', cost: 7, rarity: 5, position: 'RB', rushOffense: 10, rushDefense: 1, passOffense: 2, passDefense: 1 },
+            { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 3, passDefense: 1 },
+            { name: 'COOK', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'KUPP', cost: 6, rarity: 5, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'KELCE', cost: 7, rarity: 6, position: 'TE', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'WATT', cost: 8, rarity: 6, position: 'DE', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
         ];
         this.playerHand = [];
         this.playerDrawPile = [];
@@ -54,21 +54,21 @@ class GameState {
         this.round = 1;
         
         this.enemyDeck = [
-            { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB' },
-            { name: 'WILSON', cost: 6, rarity: 4, position: 'QB' },
-            { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB' },
-            { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB' },
-            { name: 'JONES', cost: 4, rarity: 3, position: 'QB' },
-            { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB' },
-            { name: 'JONES II', cost: 6, rarity: 4, position: 'RB' },
-            { name: 'MIXON', cost: 5, rarity: 4, position: 'RB' },
-            { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB' },
-            { name: 'HILL', cost: 7, rarity: 6, position: 'WR' },
-            { name: 'CHASE', cost: 6, rarity: 5, position: 'WR' },
-            { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR' },
-            { name: 'EVANS', cost: 5, rarity: 4, position: 'WR' },
-            { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE' },
-            { name: 'DONALD', cost: 8, rarity: 6, position: 'DT' }
+            { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB', rushOffense: 4, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'WILSON', cost: 6, rarity: 4, position: 'QB', rushOffense: 7, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB', rushOffense: 6, rushDefense: 1, passOffense: 7, passDefense: 1 },
+            { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB', rushOffense: 2, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'JONES', cost: 4, rarity: 3, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'JONES II', cost: 6, rarity: 4, position: 'RB', rushOffense: 8, rushDefense: 1, passOffense: 4, passDefense: 1 },
+            { name: 'MIXON', cost: 5, rarity: 4, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 3, passDefense: 1 },
+            { name: 'HILL', cost: 7, rarity: 6, position: 'WR', rushOffense: 3, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'CHASE', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'EVANS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE', rushOffense: 4, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'DONALD', cost: 8, rarity: 6, position: 'DT', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
         ];
 
         this.enemyHand = [];
@@ -129,10 +129,40 @@ class GameState {
     playEnemyCards() {
         if (this.enemyHand.length === 0) return 0;
 
-        const cardsToPlay = this.enemyHand.length;
+        // Enemy AI: try to play a valid combination
+        const enemySelection = [];
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+        let hasQB = false;
+
+        // First, try to find a QB
+        const qbCard = this.enemyHand.find(card => card.position === 'QB');
+        if (qbCard) {
+            enemySelection.push(qbCard);
+            hasQB = true;
+            positionCounts.QB = 1;
+        }
+
+        // Then add other cards respecting limits
+        for (const card of this.enemyHand) {
+            if (enemySelection.length >= 6) break;
+            if (card === qbCard) continue;
+
+            let canAdd = true;
+            if (card.position === 'RB' && positionCounts.RB >= 2) canAdd = false;
+            else if (card.position === 'WR' && positionCounts.WR >= 3) canAdd = false;
+            else if (card.position === 'TE' && positionCounts.TE >= 2) canAdd = false;
+
+            if (canAdd) {
+                enemySelection.push(card);
+                if (card.position in positionCounts) {
+                    positionCounts[card.position]++;
+                }
+            }
+        }
+
         let totalEnemyPower = 0;
 
-        this.enemyHand.forEach(card => {
+        enemySelection.forEach(card => {
             totalEnemyPower += card.cost + card.rarity;
             
             this.fieldCards.enemy.push({
@@ -140,13 +170,19 @@ class GameState {
                 position: card.position,
                 cost: card.cost,
                 rarity: card.rarity,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense,
                 id: `enemy-field-${Date.now()}-${Math.random()}`,
                 element: null
             });
         });
 
-        this.enemyHand = [];
-        return totalEnemyPower;
+        // Remove played cards from enemy hand
+        this.enemyHand = this.enemyHand.filter(card => !enemySelection.includes(card));
+        
+        return hasQB;  // Return whether enemy played a QB
     }
 
     drawEnemyCards(count) {
@@ -275,6 +311,49 @@ class GameState {
             return;
         }
 
+        if (this.selectedCards.size > 6) {
+            this.showMessage("You can only play up to 6 cards!");
+            return;
+        }
+
+        // Validate position limits
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+        let hasQB = false;
+        
+        this.selectedCards.forEach(cardId => {
+            const card = this.playerHand.find(c => c.id === cardId);
+            if (card) {
+                if (card.position === 'QB') {
+                    positionCounts.QB++;
+                    hasQB = true;
+                } else if (card.position === 'RB') positionCounts.RB++;
+                else if (card.position === 'WR') positionCounts.WR++;
+                else if (card.position === 'TE') positionCounts.TE++;
+            }
+        });
+
+        // Check position limits
+        if (positionCounts.QB > 1) {
+            this.showMessage("Only 1 QB allowed!");
+            return;
+        }
+        if (positionCounts.RB > 2) {
+            this.showMessage("Only 2 RBs allowed!");
+            return;
+        }
+        if (positionCounts.WR > 3) {
+            this.showMessage("Only 3 WRs allowed!");
+            return;
+        }
+        if (positionCounts.TE > 2) {
+            this.showMessage("Only 2 TEs allowed!");
+            return;
+        }
+        if (!hasQB) {
+            this.showMessage("You must play a QB to gain yards!");
+            return;
+        }
+
         let totalPower = 0;
         const playedCards = [];
 
@@ -291,6 +370,10 @@ class GameState {
                     position: card.position,
                     cost: card.cost,
                     rarity: card.rarity,
+                    rushOffense: card.rushOffense,
+                    rushDefense: card.rushDefense,
+                    passOffense: card.passOffense,
+                    passDefense: card.passDefense,
                     id: `field-${Date.now()}-${Math.random()}`,
                     element: null
                 });
@@ -494,23 +577,66 @@ class GameState {
     }
 
     endRound(playerPower) {
-        let enemyPower = 0;
-        this.fieldCards.enemy.forEach(card => {
-            enemyPower += (card.cost || 0) + (card.rarity || 0);
+        // Calculate team stats
+        const playerStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
+        const enemyStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
+        
+        // Calculate player stats
+        this.fieldCards.player.forEach(card => {
+            playerStats.rushOffense += card.rushOffense || 0;
+            playerStats.rushDefense += card.rushDefense || 0;
+            playerStats.passOffense += card.passOffense || 0;
+            playerStats.passDefense += card.passDefense || 0;
+            if (card.position === 'QB') playerStats.hasQB = true;
         });
         
-        const playerGain = Math.max(0, Math.floor((playerPower - enemyPower) / 2));
-        const enemyGain = Math.max(0, Math.floor((enemyPower - playerPower) / 2));
+        // Calculate enemy stats
+        this.fieldCards.enemy.forEach(card => {
+            enemyStats.rushOffense += card.rushOffense || 0;
+            enemyStats.rushDefense += card.rushDefense || 0;
+            enemyStats.passOffense += card.passOffense || 0;
+            enemyStats.passDefense += card.passDefense || 0;
+            if (card.position === 'QB') enemyStats.hasQB = true;
+        });
+        
+        // Calculate yard gains/losses
+        let playerGain = 0;
+        let enemyGain = 0;
+        
+        // Player yards calculation
+        if (playerStats.hasQB) {
+            const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
+            const passDiff = playerStats.passOffense - enemyStats.passDefense;
+            
+            if (rushDiff > 0 || passDiff > 0) {
+                playerGain = Math.max(rushDiff, passDiff);
+            } else if (rushDiff < 0 && passDiff < 0) {
+                playerGain = Math.max(rushDiff, passDiff); // This will be negative
+            }
+        }
+        
+        // Enemy yards calculation
+        if (enemyStats.hasQB) {
+            const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
+            const passDiff = enemyStats.passOffense - playerStats.passDefense;
+            
+            if (rushDiff > 0 || passDiff > 0) {
+                enemyGain = Math.max(rushDiff, passDiff);
+            } else if (rushDiff < 0 && passDiff < 0) {
+                enemyGain = Math.max(rushDiff, passDiff); // This will be negative
+            }
+        }
         
         const prevPlayerYards = this.playerYards;
         const prevEnemyYards = this.enemyYards;
 
-        // Update yards and health bars
+        // Update yards
         this.playerYards += playerGain;
         this.enemyYards += enemyGain;
         
-        this.playerYards = Math.min(100, this.playerYards);
-        this.enemyYards = Math.min(100, this.enemyYards);
+        // Keep yards within bounds (0-100)
+        this.playerYards = Math.max(0, Math.min(100, this.playerYards));
+        this.enemyYards = Math.max(0, Math.min(100, this.enemyYards));
         
         const playerYardsToAdd = this.playerYards - prevPlayerYards;
         const enemyYardsToAdd = this.enemyYards - prevEnemyYards;
@@ -524,7 +650,16 @@ class GameState {
         }
         
         this.updateUI();
-        this.showMessage(`Round ${this.round} Complete! You: ${playerPower} power (+${playerGain} yards), Enemy: ${enemyPower} power (+${enemyGain} yards)`);
+        
+        // Create detailed message
+        const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
+        const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
+        
+        let message = `Round ${this.round} Complete!\n`;
+        message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
+        message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
+        
+        this.showMessage(message);
         
         setTimeout(() => {
             this.clearField();
@@ -546,14 +681,18 @@ class GameState {
         this.drawPlayerCards(6);
         this.drawEnemyCards(6);
         
-        const enemyPower = this.playEnemyCards();
+        const enemyHasQB = this.playEnemyCards();
         
         this.renderFieldCards();
         
         this.renderHand();
         this.updateUI();
         
-        this.showMessage(`Round ${this.round} starts! Enemy played cards for ${enemyPower} power. Your turn!`);
+        if (enemyHasQB) {
+            this.showMessage(`Round ${this.round} starts! Enemy has a QB and can gain yards. Your turn!`);
+        } else {
+            this.showMessage(`Round ${this.round} starts! Enemy has no QB - they cannot gain yards! Your turn!`);
+        }
     }
 
     showMessage(text) {
