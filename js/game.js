@@ -74,6 +74,9 @@ class GameState {
         this.enemyHand = [];
         this.enemyDrawPile = [];
         this.enemyDiscardPile = [];
+
+        this.gameLog = [];
+        this.lastRoundResult = null;
     }
 
     initializeHealthBars() {
@@ -127,14 +130,14 @@ class GameState {
     }
 
     playEnemyCards() {
-        if (this.enemyHand.length === 0) return 0;
+        if (this.enemyHand.length === 0) return false;
 
         // Enemy AI: try to play a valid combination
         const enemySelection = [];
         const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
         let hasQB = false;
 
-        // First, try to find a QB
+        // First, try to find a QB (only one allowed)
         const qbCard = this.enemyHand.find(card => card.position === 'QB');
         if (qbCard) {
             enemySelection.push(qbCard);
@@ -146,6 +149,9 @@ class GameState {
         for (const card of this.enemyHand) {
             if (enemySelection.length >= 6) break;
             if (card === qbCard) continue;
+            
+            // Skip other QBs since we can only have one
+            if (card.position === 'QB') continue;
 
             let canAdd = true;
             if (card.position === 'RB' && positionCounts.RB >= 2) canAdd = false;
@@ -160,11 +166,8 @@ class GameState {
             }
         }
 
-        let totalEnemyPower = 0;
-
+        // Rest of the method remains the same...
         enemySelection.forEach(card => {
-            totalEnemyPower += card.cost + card.rarity;
-            
             this.fieldCards.enemy.push({
                 name: card.name,
                 position: card.position,
@@ -351,7 +354,6 @@ class GameState {
         }
         if (!hasQB) {
             this.showMessage("You must play a QB to gain yards!");
-            return;
         }
 
         let totalPower = 0;
@@ -602,8 +604,8 @@ class GameState {
         // Calculate yard gains/losses
         let playerGain = 0;
         let enemyGain = 0;
-        
-        // Player yards calculation
+
+        // Player yards calculation - can only gain offensive yards with QB
         if (playerStats.hasQB) {
             const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
             const passDiff = playerStats.passOffense - enemyStats.passDefense;
@@ -613,9 +615,14 @@ class GameState {
             } else if (rushDiff < 0 && passDiff < 0) {
                 playerGain = Math.max(rushDiff, passDiff); // This will be negative
             }
+        } else {
+            // No QB = no offensive yards, but can still get defensive "power points"
+            // This could be represented as preventing enemy gains rather than gaining yards yourself
+            // For now, player gains 0 offensive yards without QB
+            playerGain = 0;
         }
-        
-        // Enemy yards calculation
+
+        // Enemy yards calculation - same rules apply
         if (enemyStats.hasQB) {
             const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
             const passDiff = enemyStats.passOffense - playerStats.passDefense;
@@ -625,6 +632,9 @@ class GameState {
             } else if (rushDiff < 0 && passDiff < 0) {
                 enemyGain = Math.max(rushDiff, passDiff); // This will be negative
             }
+        } else {
+            // No QB = no offensive yards for enemy either
+            enemyGain = 0;
         }
         
         const prevPlayerYards = this.playerYards;
@@ -656,11 +666,36 @@ class GameState {
         const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
         
         let message = `Round ${this.round} Complete!\n`;
-        message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
-        message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
+
+        if (playerStats.hasQB) {
+            const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
+            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
+        } else {
+            message += `You: No QB - No offensive yards (Defense only)\n`;
+        }
+
+        if (enemyStats.hasQB) {
+            const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
+            message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
+        } else {
+            message += `Enemy: No QB - No offensive yards (Defense only)`;
+        }
         
         this.showMessage(message);
         
+        const roundData = {
+            round: this.round,
+            playerGain: playerGain,
+            enemyGain: enemyGain,
+            playerYards: this.playerYards,
+            enemyYards: this.enemyYards,
+            playerOffenseType: playerOffenseType,
+            enemyOffenseType: enemyOffenseType
+        };
+
+        this.addToGameLog(roundData);
+        this.updateLastRoundOutcome(roundData);
+
         setTimeout(() => {
             this.clearField();
             
@@ -688,11 +723,17 @@ class GameState {
         this.renderHand();
         this.updateUI();
         
+        const playerHasQB = this.fieldCards.player.some(card => card.position === 'QB');
+
+        let roundMessage = `Round ${this.round} starts! `;
         if (enemyHasQB) {
-            this.showMessage(`Round ${this.round} starts! Enemy has a QB and can gain yards. Your turn!`);
+            roundMessage += "Enemy has a QB and can gain yards. ";
         } else {
-            this.showMessage(`Round ${this.round} starts! Enemy has no QB - they cannot gain yards! Your turn!`);
+            roundMessage += "Enemy has no QB - they cannot gain yards! ";
         }
+        roundMessage += "Your turn!";
+
+        this.showMessage(roundMessage);
     }
 
     showMessage(text) {
@@ -748,6 +789,68 @@ class GameState {
         }
     }
 
+    addToGameLog(roundData) {
+        this.gameLog.push({
+            round: roundData.round,
+            playerGain: roundData.playerGain,
+            enemyGain: roundData.enemyGain,
+            playerYards: roundData.playerYards,
+            enemyYards: roundData.enemyYards,
+            playerOffenseType: roundData.playerOffenseType,
+            enemyOffenseType: roundData.enemyOffenseType,
+            timestamp: new Date().toLocaleTimeString()
+        });
+    }
+
+    updateLastRoundOutcome(roundData) {
+        const outcomeElement = document.getElementById('lastRoundOutcome');
+        
+        if (roundData.playerGain > roundData.enemyGain) {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: You +${roundData.playerGain}, Enemy +${roundData.enemyGain}</div>`;
+            outcomeElement.style.borderColor = '#FFFFFF';
+        } else if (roundData.enemyGain > roundData.playerGain) {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: You +${roundData.playerGain}, Enemy +${roundData.enemyGain}</div>`;
+            outcomeElement.style.borderColor = '#f44336';
+        } else {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: Tie +${roundData.playerGain} each</div>`;
+            outcomeElement.style.borderColor = '#ff9800';
+        }
+        
+        outcomeElement.style.display = 'block';
+        this.lastRoundResult = roundData;
+    }
+
+    showGameLogModal() {
+        const modal = document.getElementById('gameLogModal');
+        const content = document.getElementById('gameLogContent');
+        
+        if (this.gameLog.length === 0) {
+            content.innerHTML = '<p>No rounds completed yet.</p>';
+        } else {
+            content.innerHTML = this.gameLog.map(entry => {
+                let entryClass = 'tie';
+                if (entry.playerGain > entry.enemyGain) entryClass = 'player-win';
+                else if (entry.enemyGain > entry.playerGain) entryClass = 'enemy-win';
+                
+                return `
+                    <div class="log-entry ${entryClass}">
+                        <div class="log-round">Round ${entry.round} - ${entry.timestamp}</div>
+                        <div class="log-details">
+                            You: ${entry.playerOffenseType} attack (+${entry.playerGain} yards) - Total: ${entry.playerYards}<br>
+                            Enemy: ${entry.enemyOffenseType} attack (+${entry.enemyGain} yards) - Total: ${entry.enemyYards}
+                        </div>
+                    </div>
+                `;
+            }).reverse().join('');
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    hideGameLogModal() {
+        document.getElementById('gameLogModal').style.display = 'none';
+    }
+
     setupEventListeners() {
         document.getElementById('playBtn').addEventListener('click', () => {
             this.playSelectedCards();
@@ -755,6 +858,20 @@ class GameState {
 
         document.getElementById('discardBtn').addEventListener('click', () => {
             this.discardSelected();
+        });
+
+        document.getElementById('lastRoundOutcome').addEventListener('click', () => {
+            this.showGameLogModal();
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            this.hideGameLogModal();
+        });
+
+        document.getElementById('gameLogModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('gameLogModal')) {
+                this.hideGameLogModal();
+            }
         });
     }
 }
