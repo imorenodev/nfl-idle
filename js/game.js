@@ -1,0 +1,905 @@
+// Set CSS custom property for viewport height
+function setVH() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Initial set
+setVH();
+
+// Re-calculate on resize
+window.addEventListener('resize', setVH);
+
+// Re-calculate on orientation change
+window.addEventListener('orientationchange', () => {
+    setTimeout(setVH, 100);
+});
+
+class GameState {
+    constructor() {
+        this.selectedCards = new Set();
+        this.playerYards = 10;
+        this.enemyYards = 0;
+
+        // Health bar instances
+        this.playerYardsBar = null;
+        this.enemyYardsBar = null;
+
+        this.playerDeck = [
+            { name: 'MAHOMES', cost: 8, rarity: 6, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'ALLEN', cost: 7, rarity: 6, position: 'QB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'BURROW', cost: 6, rarity: 5, position: 'QB', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'HURTS', cost: 5, rarity: 4, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 7, passDefense: 1 },
+            { name: 'LAMAR', cost: 6, rarity: 5, position: 'QB', rushOffense: 10, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'HENRY', cost: 7, rarity: 5, position: 'RB', rushOffense: 10, rushDefense: 1, passOffense: 2, passDefense: 1 },
+            { name: 'MCCAFFREY', cost: 8, rarity: 6, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'CHUBB', cost: 5, rarity: 4, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 3, passDefense: 1 },
+            { name: 'COOK', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'KUPP', cost: 6, rarity: 5, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'JEFFERSON', cost: 7, rarity: 6, position: 'WR', rushOffense: 2, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'DIGGS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'ADAMS', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'KELCE', cost: 7, rarity: 6, position: 'TE', rushOffense: 3, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'WATT', cost: 8, rarity: 6, position: 'DE', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
+        ];
+        this.playerHand = [];
+        this.playerDrawPile = [];
+        this.playerDiscardPile = [];
+
+        this.fieldCards = {
+            player: [],
+            enemy: []
+        };
+        this.hasDiscardedThisRound = false;
+        this.round = 1;
+        
+        this.enemyDeck = [
+            { name: 'RODGERS', cost: 7, rarity: 5, position: 'QB', rushOffense: 4, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'WILSON', cost: 6, rarity: 4, position: 'QB', rushOffense: 7, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'PRESCOTT', cost: 5, rarity: 4, position: 'QB', rushOffense: 6, rushDefense: 1, passOffense: 7, passDefense: 1 },
+            { name: 'STAFFORD', cost: 5, rarity: 3, position: 'QB', rushOffense: 2, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'JONES', cost: 4, rarity: 3, position: 'QB', rushOffense: 8, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'BARKLEY', cost: 7, rarity: 5, position: 'RB', rushOffense: 9, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'JONES II', cost: 6, rarity: 4, position: 'RB', rushOffense: 8, rushDefense: 1, passOffense: 4, passDefense: 1 },
+            { name: 'MIXON', cost: 5, rarity: 4, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 6, passDefense: 1 },
+            { name: 'HARRIS', cost: 4, rarity: 3, position: 'RB', rushOffense: 7, rushDefense: 1, passOffense: 3, passDefense: 1 },
+            { name: 'HILL', cost: 7, rarity: 6, position: 'WR', rushOffense: 3, rushDefense: 1, passOffense: 10, passDefense: 1 },
+            { name: 'CHASE', cost: 6, rarity: 5, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            { name: 'HOPKINS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'EVANS', cost: 5, rarity: 4, position: 'WR', rushOffense: 1, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'KITTLE', cost: 6, rarity: 5, position: 'TE', rushOffense: 4, rushDefense: 1, passOffense: 8, passDefense: 1 },
+            { name: 'DONALD', cost: 8, rarity: 6, position: 'DT', rushOffense: 1, rushDefense: 10, passOffense: 1, passDefense: 5 }
+        ];
+
+        this.enemyHand = [];
+        this.enemyDrawPile = [];
+        this.enemyDiscardPile = [];
+
+        this.gameLog = [];
+        this.lastRoundResult = null;
+    }
+
+    initializeHealthBars() {
+        // Initialize player yards bar
+        this.playerYardsBar = new HealthBarComponent('#player-yards-bar', {
+            name: 'Your Yards',
+            initialValue: this.playerYards
+        });
+
+        // Initialize enemy yards bar  
+        this.enemyYardsBar = new HealthBarComponent('#enemy-yards-bar', {
+            name: 'Enemy Yards',
+            initialValue: this.enemyYards
+        });
+    }
+
+    init() {
+        this.generateInitialHand();
+        this.generateEnemyDeck();
+        this.setupEventListeners();
+        
+        // Initialize health bars after DOM is ready
+        setTimeout(() => {
+            this.initializeHealthBars();
+        }, 100);
+        
+        this.startNewRound();
+        this.updateUI();
+    }
+
+    generateInitialHand() {
+        const shuffledPlayers = [...this.playerDeck].sort(() => Math.random() - 0.5);
+        
+        this.playerDrawPile = shuffledPlayers.map((player, index) => ({
+            ...player,
+            id: `deck-${index}`,
+            element: null
+        }));
+    }
+
+    generateEnemyDeck() {
+        const shuffledEnemyPlayers = [...this.enemyDeck].sort(() => Math.random() - 0.5);
+        
+        this.enemyDrawPile = shuffledEnemyPlayers.map((player, index) => ({
+            ...player,
+            id: `enemy-deck-${index}`
+        }));
+    }
+
+    generateEnemyHand() {
+    }
+
+    playEnemyCards() {
+        if (this.enemyHand.length === 0) return false;
+
+        // Enemy AI: try to play a valid combination
+        const enemySelection = [];
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+        let hasQB = false;
+
+        // First, try to find a QB (only one allowed)
+        const qbCard = this.enemyHand.find(card => card.position === 'QB');
+        if (qbCard) {
+            enemySelection.push(qbCard);
+            hasQB = true;
+            positionCounts.QB = 1;
+        }
+
+        // Then add other cards respecting limits
+        for (const card of this.enemyHand) {
+            if (enemySelection.length >= 6) break;
+            if (card === qbCard) continue;
+            
+            // Skip other QBs since we can only have one
+            if (card.position === 'QB') continue;
+
+            let canAdd = true;
+            if (card.position === 'RB' && positionCounts.RB >= 2) canAdd = false;
+            else if (card.position === 'WR' && positionCounts.WR >= 3) canAdd = false;
+            else if (card.position === 'TE' && positionCounts.TE >= 2) canAdd = false;
+
+            if (canAdd) {
+                enemySelection.push(card);
+                if (card.position in positionCounts) {
+                    positionCounts[card.position]++;
+                }
+            }
+        }
+
+        // Rest of the method remains the same...
+        enemySelection.forEach(card => {
+            this.fieldCards.enemy.push({
+                name: card.name,
+                position: card.position,
+                cost: card.cost,
+                rarity: card.rarity,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense,
+                id: `enemy-field-${Date.now()}-${Math.random()}`,
+                element: null
+            });
+        });
+
+        // Remove played cards from enemy hand
+        this.enemyHand = this.enemyHand.filter(card => !enemySelection.includes(card));
+        
+        return hasQB;  // Return whether enemy played a QB
+    }
+
+    drawEnemyCards(count) {
+        const cardsToDraw = count;
+        
+        for (let i = 0; i < cardsToDraw; i++) {
+            const newCard = this.enemyDrawPile.shift();
+            if (newCard) {
+                newCard.id = `enemy-hand-${Date.now()}-${Math.random()}`;
+                this.enemyHand.push(newCard);
+            }
+
+            if (this.getNumberOfCardsInEnemyDrawPile() === 0 && this.getNumberOfCardsInEnemyDiscardPile() > 0) {
+                this.shuffleEnemyDiscardIntoDeck();
+            }
+        }
+        
+        this.enemyCardsRemaining = this.getNumberOfCardsInEnemyDrawPile();
+    }
+
+    shuffleEnemyDiscardIntoDeck() {
+        const shuffled = [...this.enemyDiscardPile].sort(() => Math.random() - 0.5);
+        this.enemyDrawPile.push(...shuffled);
+        this.enemyDiscardPile = [];
+        this.showMessage("🔄 Enemy deck reshuffled!");
+    }
+
+    renderHand() {
+        const handContainer = document.getElementById('handCards');
+        handContainer.innerHTML = '';
+
+        this.playerHand.forEach((card, index) => {
+            const cardElement = this.createCardElement(card, index);
+            handContainer.appendChild(cardElement);
+            card.element = cardElement;
+            
+            setTimeout(() => {
+                cardElement.classList.add('card-enter');
+            }, index * 100);
+        });
+    }
+
+    createCardElement(card, index) {
+        const cardDiv = document.createElement('div');
+        cardDiv.className = 'card floating-animation';
+        cardDiv.style.animationDelay = `${index * 0.2}s`;
+        cardDiv.dataset.cardId = card.id;
+        
+        cardDiv.innerHTML = `
+            <div class="card-header">
+                <div class="card-cost">${card.cost}</div>
+                <div class="card-rarity">${card.rarity}</div>
+            </div>
+            <div class="card-image">
+                <div class="position-badge">${card.position}</div>
+                ${card.name}
+            </div>
+            <div class="card-name">${card.name}</div>
+        `;
+
+        cardDiv.addEventListener('click', () => this.toggleCardSelection(card.id));
+        return cardDiv;
+    }
+
+    renderFieldCards() {
+        const enemyZone = document.getElementById('enemyZone');
+        const playerZone = document.getElementById('playerZone');
+        
+        enemyZone.innerHTML = '';
+        playerZone.innerHTML = '';
+
+        this.fieldCards.enemy.forEach((card, index) => {
+            const fieldCard = this.createFieldCard(card, 'enemy');
+            enemyZone.appendChild(fieldCard);
+            
+            setTimeout(() => {
+                fieldCard.classList.add('field-placement');
+            }, index * 150);
+        });
+
+        this.fieldCards.player.forEach((card, index) => {
+            const fieldCard = this.createFieldCard(card, 'player');
+            playerZone.appendChild(fieldCard);
+            
+            setTimeout(() => {
+                fieldCard.classList.add('field-placement');
+            }, index * 150);
+        });
+    }
+
+    createFieldCard(card, type) {
+        const fieldCard = document.createElement('div');
+        fieldCard.className = `field-card ${type}`;
+        fieldCard.innerHTML = `
+            <div style="font-size: clamp(6px, 1.5vw, 8px); margin-bottom: 2px;">${card.position || ''}</div>
+            <div>${card.name}</div>
+        `;
+        return fieldCard;
+    }
+
+    toggleCardSelection(cardId) {
+        const card = this.playerHand.find(c => c.id === cardId);
+        if (!card || !card.element) return;
+
+        if (this.selectedCards.has(cardId)) {
+            this.selectedCards.delete(cardId);
+            card.element.classList.remove('selected');
+        } else {
+            this.selectedCards.add(cardId);
+            card.element.classList.add('selected');
+            
+            this.addSelectionEffect(card.element);
+        }
+    }
+
+    addSelectionEffect(element) {
+        element.style.transform = 'translateY(-12px) scale(1.05) rotateY(360deg)';
+        setTimeout(() => {
+            element.style.transform = 'translateY(-12px) scale(1.05)';
+        }, 600);
+    }
+
+    playSelectedCards() {
+        if (this.selectedCards.size === 0) {
+            this.showMessage("Select cards to play!");
+            return;
+        }
+
+        if (this.selectedCards.size > 6) {
+            this.showMessage("You can only play up to 6 cards!");
+            return;
+        }
+
+        // Validate position limits
+        const positionCounts = { QB: 0, RB: 0, WR: 0, TE: 0 };
+        let hasQB = false;
+        
+        this.selectedCards.forEach(cardId => {
+            const card = this.playerHand.find(c => c.id === cardId);
+            if (card) {
+                if (card.position === 'QB') {
+                    positionCounts.QB++;
+                    hasQB = true;
+                } else if (card.position === 'RB') positionCounts.RB++;
+                else if (card.position === 'WR') positionCounts.WR++;
+                else if (card.position === 'TE') positionCounts.TE++;
+            }
+        });
+
+        // Check position limits
+        if (positionCounts.QB > 1) {
+            this.showMessage("Only 1 QB allowed!");
+            return;
+        }
+        if (positionCounts.RB > 2) {
+            this.showMessage("Only 2 RBs allowed!");
+            return;
+        }
+        if (positionCounts.WR > 3) {
+            this.showMessage("Only 3 WRs allowed!");
+            return;
+        }
+        if (positionCounts.TE > 2) {
+            this.showMessage("Only 2 TEs allowed!");
+            return;
+        }
+        if (!hasQB) {
+            this.showMessage("You must play a QB to gain yards!");
+        }
+
+        let totalPower = 0;
+        const playedCards = [];
+
+        this.selectedCards.forEach(cardId => {
+            const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
+            if (cardIndex !== -1) {
+                const card = this.playerHand[cardIndex];
+                playedCards.push(cardIndex);
+                
+                totalPower += card.cost + card.rarity;
+
+                this.fieldCards.player.push({
+                    name: card.name,
+                    position: card.position,
+                    cost: card.cost,
+                    rarity: card.rarity,
+                    rushOffense: card.rushOffense,
+                    rushDefense: card.rushDefense,
+                    passOffense: card.passOffense,
+                    passDefense: card.passDefense,
+                    id: `field-${Date.now()}-${Math.random()}`,
+                    element: null
+                });
+                
+                if (card.element) {
+                    card.element.style.transform = 'scale(0) rotate(180deg)';
+                    card.element.style.opacity = '0';
+                }
+            }
+        });
+
+        playedCards.sort((a, b) => b - a);
+        
+        setTimeout(() => {
+            playedCards.forEach(cardIndex => {
+                this.playerHand.splice(cardIndex, 1);
+            });
+            
+            this.discardRemainingHand();
+            
+            this.renderFieldCards();
+            this.endRound(totalPower);
+        }, 300);
+
+        this.selectedCards.clear();
+    }
+
+    discardSelected() {
+        if (this.selectedCards.size === 0) {
+            this.showMessage("Select cards to discard!");
+            return;
+        }
+
+        if (this.hasDiscardedThisRound) {
+            this.showMessage("You can only discard once per round!");
+            return;
+        }
+
+        const discardCount = this.selectedCards.size;
+        const cardsToDiscard = [];
+
+        this.selectedCards.forEach(cardId => {
+            const cardIndex = this.playerHand.findIndex(c => c.id === cardId);
+            if (cardIndex !== -1) {
+                const card = this.playerHand[cardIndex];
+                this.playerDiscardPile.push({
+                    name: card.name,
+                    cost: card.cost,
+                    rarity: card.rarity,
+                    position: card.position
+                });
+                cardsToDiscard.push(cardIndex);
+            }
+        });
+
+        cardsToDiscard.sort((a, b) => b - a);
+
+        cardsToDiscard.forEach((cardIndex, i) => {
+            const card = this.playerHand[cardIndex];
+            if (card.element) {
+                card.element.style.transform = 'translateX(-200px) rotate(-90deg)';
+                card.element.style.opacity = '0';
+                
+                setTimeout(() => {
+                    this.playerHand.splice(cardIndex, 1);
+                    
+                    if (i === cardsToDiscard.length - 1) {
+                        this.drawPlayerCards(discardCount);
+                        this.renderHand();
+                    }
+                }, 300);
+            }
+        });
+
+        this.selectedCards.clear();
+        this.hasDiscardedThisRound = true;
+        this.updateUI();
+        this.showMessage(`Discarded ${discardCount} cards, drew ${Math.min(discardCount, this.getNumberOfCardsInPlayerDrawPile())} new cards`);
+    }
+
+    clearField() {
+        this.fieldCards.player.forEach(card => {
+            this.playerDiscardPile.push({
+                name: card.name,
+                cost: card.cost,
+                rarity: card.rarity,
+                position: card.position
+            });
+        });
+
+        this.fieldCards.enemy.forEach(card => {
+            this.enemyDiscardPile.push({
+                name: card.name,
+                cost: card.cost,
+                rarity: card.rarity,
+                position: card.position
+            });
+        });
+        
+        this.fieldCards.player = [];
+        this.fieldCards.enemy = [];
+        
+        this.renderFieldCards();
+        
+        this.showMessage("⚡ Field cleared! Cards added to discard piles");
+    }
+
+    getCardCostByName(name) {
+        const cardData = {
+            'MAHOMES': 8, 'ALLEN': 7, 'BURROW': 6, 'HURTS': 5, 'LAMAR': 6,
+            'MCCAFFREY': 8, 'HENRY': 7, 'CHUBB': 5, 'COOK': 4,
+            'JEFFERSON': 7, 'KUPP': 6, 'ADAMS': 6, 'DIGGS': 5,
+            'KELCE': 7, 'WATT': 8
+        };
+        return cardData[name] || 5;
+    }
+
+    getCardRarityByName(name) {
+        const cardData = {
+            'MAHOMES': 6, 'ALLEN': 6, 'BURROW': 5, 'HURTS': 4, 'LAMAR': 5,
+            'MCCAFFREY': 6, 'HENRY': 5, 'CHUBB': 4, 'COOK': 3,
+            'JEFFERSON': 6, 'KUPP': 5, 'ADAMS': 5, 'DIGGS': 4,
+            'KELCE': 6, 'WATT': 6
+        };
+        return cardData[name] || 4;
+    }
+
+    getEnemyCardCostByName(name) {
+        const cardData = {
+            'RODGERS': 7, 'WILSON': 6, 'PRESCOTT': 5, 'STAFFORD': 5, 'JONES': 4,
+            'BARKLEY': 7, 'JONES II': 6, 'MIXON': 5, 'HARRIS': 4,
+            'HILL': 7, 'CHASE': 6, 'HOPKINS': 5, 'EVANS': 5,
+            'KITTLE': 6, 'DONALD': 8
+        };
+        return cardData[name] || 5;
+    }
+
+    getEnemyCardRarityByName(name) {
+        const cardData = {
+            'RODGERS': 5, 'WILSON': 4, 'PRESCOTT': 4, 'STAFFORD': 3, 'JONES': 3,
+            'BARKLEY': 5, 'JONES II': 4, 'MIXON': 4, 'HARRIS': 3,
+            'HILL': 6, 'CHASE': 5, 'HOPKINS': 4, 'EVANS': 4,
+            'KITTLE': 5, 'DONALD': 6
+        };
+        return cardData[name] || 4;
+    }
+
+    discardRemainingHand() {
+        this.playerHand.forEach(card => {
+            this.playerDiscardPile.push({
+                name: card.name,
+                cost: card.cost,
+                rarity: card.rarity,
+                position: card.position
+            });
+        });
+        
+        this.playerHand = [];
+    }
+
+    drawPlayerCards(count) {
+        const cardsToDraw = count;
+        
+        for (let i = 0; i < cardsToDraw; i++) {
+            const newCard = this.playerDrawPile.shift();
+            if (newCard) {
+                newCard.id = `hand-${Date.now()}-${Math.random()}`;
+                this.playerHand.push(newCard);
+            }
+
+            if (this.getNumberOfCardsInPlayerDrawPile() === 0 && this.getNumberOfCardsInPlayerDiscardPile() > 0) {
+                this.shuffleDiscardIntoDeck();
+            }
+        }
+        
+        this.cardsRemaining = this.getNumberOfCardsInPlayerDrawPile();
+        this.updateUI();
+    }
+
+    shuffleDiscardIntoDeck() {
+        const shuffled = [...this.playerDiscardPile].sort(() => Math.random() - 0.5);
+        this.playerDrawPile.push(...shuffled);
+        this.playerDiscardPile = [];
+        this.showMessage("🔄 Deck reshuffled from discard pile!");
+    }
+
+    getNumberOfCardsInPlayerDrawPile() {
+        return this.playerDrawPile.length;
+    }
+
+    getNumberOfCardsInPlayerDiscardPile() {
+        return this.playerDiscardPile.length;
+    }
+
+    getNumberOfCardsInEnemyDrawPile() {
+        return this.enemyDrawPile.length;
+    }
+
+    getNumberOfCardsInEnemyDiscardPile() {
+        return this.enemyDiscardPile.length;
+    }
+
+    endRound(playerPower) {
+        // Calculate team stats
+        const playerStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
+        const enemyStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
+        
+        // Calculate player stats
+        this.fieldCards.player.forEach(card => {
+            playerStats.rushOffense += card.rushOffense || 0;
+            playerStats.rushDefense += card.rushDefense || 0;
+            playerStats.passOffense += card.passOffense || 0;
+            playerStats.passDefense += card.passDefense || 0;
+            if (card.position === 'QB') playerStats.hasQB = true;
+        });
+        
+        // Calculate enemy stats
+        this.fieldCards.enemy.forEach(card => {
+            enemyStats.rushOffense += card.rushOffense || 0;
+            enemyStats.rushDefense += card.rushDefense || 0;
+            enemyStats.passOffense += card.passOffense || 0;
+            enemyStats.passDefense += card.passDefense || 0;
+            if (card.position === 'QB') enemyStats.hasQB = true;
+        });
+        
+        // Calculate yard gains/losses
+        let playerGain = 0;
+        let enemyGain = 0;
+
+        // Player yards calculation - can only gain offensive yards with QB
+        if (playerStats.hasQB) {
+            const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
+            const passDiff = playerStats.passOffense - enemyStats.passDefense;
+            
+            if (rushDiff > 0 || passDiff > 0) {
+                playerGain = Math.max(rushDiff, passDiff);
+            } else if (rushDiff < 0 && passDiff < 0) {
+                playerGain = Math.max(rushDiff, passDiff); // This will be negative
+            }
+        } else {
+            // No QB = no offensive yards, but can still get defensive "power points"
+            // This could be represented as preventing enemy gains rather than gaining yards yourself
+            // For now, player gains 0 offensive yards without QB
+            playerGain = 0;
+        }
+
+        // Enemy yards calculation - same rules apply
+        if (enemyStats.hasQB) {
+            const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
+            const passDiff = enemyStats.passOffense - playerStats.passDefense;
+            
+            if (rushDiff > 0 || passDiff > 0) {
+                enemyGain = Math.max(rushDiff, passDiff);
+            } else if (rushDiff < 0 && passDiff < 0) {
+                enemyGain = Math.max(rushDiff, passDiff); // This will be negative
+            }
+        } else {
+            // No QB = no offensive yards for enemy either
+            enemyGain = 0;
+        }
+                
+        // Store previous values
+        const prevPlayerYards = this.playerYards;
+        const prevEnemyYards = this.enemyYards;
+
+        // Calculate what the new yards would be
+        const newPlayerYards = this.playerYards + playerGain;
+        const newEnemyYards = this.enemyYards + enemyGain;
+
+        // Clamp to bounds (0-100)
+        this.playerYards = Math.max(0, Math.min(100, newPlayerYards));
+        this.enemyYards = Math.max(0, Math.min(100, newEnemyYards));
+
+        // Calculate the actual change that occurred (accounting for clamping)
+        const playerYardsToAdd = this.playerYards - prevPlayerYards;
+        const enemyYardsToAdd = this.enemyYards - prevEnemyYards;
+
+        // Update health bars with the actual change
+        if (this.playerYardsBar) {
+            this.playerYardsBar.add(playerYardsToAdd);
+        }
+        if (this.enemyYardsBar) {
+            this.enemyYardsBar.add(enemyYardsToAdd);
+        }
+        
+        this.updateUI();
+        
+        // Create detailed message
+        const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
+        const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
+        
+        let message = `Round ${this.round} Complete!\n`;
+
+        if (playerStats.hasQB) {
+            const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
+            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
+        } else {
+            message += `You: No QB - No offensive yards (Defense only)\n`;
+        }
+
+        if (enemyStats.hasQB) {
+            const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
+            message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
+        } else {
+            message += `Enemy: No QB - No offensive yards (Defense only)`;
+        }
+        
+        this.showMessage(message);
+        
+        const roundData = {
+            round: this.round,
+            playerGain: playerGain,
+            enemyGain: enemyGain,
+            playerYards: this.playerYards,
+            enemyYards: this.enemyYards,
+            playerOffenseType: playerOffenseType,
+            enemyOffenseType: enemyOffenseType
+        };
+
+        this.addToGameLog(roundData);
+        this.updateLastRoundOutcome(roundData);
+
+        setTimeout(() => {
+            this.clearField();
+            
+            this.hasDiscardedThisRound = false;
+            this.round++;
+            
+            this.startNewRound();
+        }, 3500);
+        
+        if (this.playerYards >= 100) {
+            setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 3000);
+        } else if (this.enemyYards >= 100) {
+            setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 3000);
+        }
+    }
+
+    startNewRound() {
+        this.drawPlayerCards(6);
+        this.drawEnemyCards(6);
+        
+        const enemyHasQB = this.playEnemyCards();
+        
+        this.renderFieldCards();
+        
+        this.renderHand();
+        this.updateUI();
+        
+        const playerHasQB = this.fieldCards.player.some(card => card.position === 'QB');
+
+        let roundMessage = `Round ${this.round} starts! `;
+        if (enemyHasQB) {
+            roundMessage += "Enemy has a QB and can gain yards. ";
+        } else {
+            roundMessage += "Enemy has no QB - they cannot gain yards! ";
+        }
+        roundMessage += "Your turn!";
+
+        this.showMessage(roundMessage);
+    }
+
+    showMessage(text) {
+        const message = document.createElement('div');
+        message.className = 'game-message';
+        message.textContent = text;
+        message.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.9);
+            color: white;
+            padding: 15px 25px;
+            border-radius: 25px;
+            font-weight: bold;
+            z-index: 1000;
+            animation: messageFloat 3s ease-out forwards;
+            font-size: clamp(12px, 3vw, 16px);
+            max-width: 90vw;
+            text-align: center;
+        `;
+        
+        document.body.appendChild(message);
+        
+        setTimeout(() => {
+            if (message.parentNode) {
+                message.parentNode.removeChild(message);
+            }
+        }, 3000);
+    }
+
+    updateUI() {
+        document.querySelector('.cards-remaining').textContent = `Draw Pile: ${this.getNumberOfCardsInPlayerDrawPile()}/${this.playerDeck.length} 🂡`;
+
+        document.getElementById('enemyDeckInfo').textContent = `Enemy: ${this.getNumberOfCardsInEnemyDrawPile()}/${this.enemyDeck.length} 🂡`;
+        
+        if (this.enemyYardsBar) {
+            //this.enemyYardsBar.add(10);
+        }
+
+        if (this.playerYardsBar) {
+            //this.playerYardsBar.add(10);
+        }
+
+        const discardBtn = document.getElementById('discardBtn');
+        if (this.hasDiscardedThisRound) {
+            discardBtn.style.opacity = '0.5';
+            discardBtn.style.cursor = 'not-allowed';
+        } else {
+            discardBtn.style.opacity = '1';
+            discardBtn.style.cursor = 'pointer';
+        }
+    }
+
+    addToGameLog(roundData) {
+        this.gameLog.push({
+            round: roundData.round,
+            playerGain: roundData.playerGain,
+            enemyGain: roundData.enemyGain,
+            playerYards: roundData.playerYards,
+            enemyYards: roundData.enemyYards,
+            playerOffenseType: roundData.playerOffenseType,
+            enemyOffenseType: roundData.enemyOffenseType,
+            timestamp: new Date().toLocaleTimeString()
+        });
+    }
+
+    updateLastRoundOutcome(roundData) {
+        const outcomeElement = document.getElementById('lastRoundOutcome');
+        
+        if (roundData.playerGain > roundData.enemyGain) {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: You +${roundData.playerGain}, Enemy +${roundData.enemyGain}</div>`;
+            outcomeElement.style.borderColor = '#FFFFFF';
+        } else if (roundData.enemyGain > roundData.playerGain) {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: You +${roundData.playerGain}, Enemy +${roundData.enemyGain}</div>`;
+            outcomeElement.style.borderColor = '#f44336';
+        } else {
+            outcomeElement.innerHTML = `<div class="outcome-text">📝 Last Play: Tie +${roundData.playerGain} each</div>`;
+            outcomeElement.style.borderColor = '#ff9800';
+        }
+        
+        outcomeElement.style.display = 'block';
+        this.lastRoundResult = roundData;
+    }
+
+    showGameLogModal() {
+        const modal = document.getElementById('gameLogModal');
+        const content = document.getElementById('gameLogContent');
+        
+        if (this.gameLog.length === 0) {
+            content.innerHTML = '<p>No rounds completed yet.</p>';
+        } else {
+            content.innerHTML = this.gameLog.map(entry => {
+                let entryClass = 'tie';
+                if (entry.playerGain > entry.enemyGain) entryClass = 'player-win';
+                else if (entry.enemyGain > entry.playerGain) entryClass = 'enemy-win';
+                
+                return `
+                    <div class="log-entry ${entryClass}">
+                        <div class="log-round">Round ${entry.round} - ${entry.timestamp}</div>
+                        <div class="log-details">
+                            You: ${entry.playerOffenseType} attack (+${entry.playerGain} yards) - Total: ${entry.playerYards}<br>
+                            Enemy: ${entry.enemyOffenseType} attack (+${entry.enemyGain} yards) - Total: ${entry.enemyYards}
+                        </div>
+                    </div>
+                `;
+            }).reverse().join('');
+        }
+        
+        modal.style.display = 'flex';
+    }
+
+    hideGameLogModal() {
+        document.getElementById('gameLogModal').style.display = 'none';
+    }
+
+    setupEventListeners() {
+        document.getElementById('playBtn').addEventListener('click', () => {
+            this.playSelectedCards();
+        });
+
+        document.getElementById('discardBtn').addEventListener('click', () => {
+            this.discardSelected();
+        });
+
+        document.getElementById('lastRoundOutcome').addEventListener('click', () => {
+            this.showGameLogModal();
+        });
+
+        document.getElementById('closeModal').addEventListener('click', () => {
+            this.hideGameLogModal();
+        });
+
+        document.getElementById('gameLogModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('gameLogModal')) {
+                this.hideGameLogModal();
+            }
+        });
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const game = new GameState();
+    game.init();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const fieldSection = document.querySelector('.field-section');
+    
+    fieldSection.addEventListener('mousemove', (e) => {
+        const rect = fieldSection.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        
+        fieldSection.style.background = `
+            radial-gradient(circle at ${x}px ${y}px, 
+                rgba(255,255,255,0.1) 0%, 
+                transparent 51%), 
+            linear-gradient(180deg, #4CAF50 0%, #45a049 100%)
+        `;
+    });
+    
+    fieldSection.addEventListener('mouseleave', () => {
+        fieldSection.style.background = 'linear-gradient(180deg, #4CAF50 0%, #45a049 100%)';
+    });
+});
