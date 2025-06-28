@@ -15,6 +15,10 @@ window.addEventListener('orientationchange', () => {
     setTimeout(setVH, 100);
 });
 
+// Import game over functionality
+import { CombatEngine } from './core/CombatEngine.js';
+import { gameOverManager } from './core/GameOverManager.js';
+
 class GameState {
     constructor() {
         this.selectedCards = new Set();
@@ -97,6 +101,7 @@ class GameState {
         this.generateInitialHand();
         this.generateEnemyDeck();
         this.setupEventListeners();
+        this.setupGameOverManager();
         
         // Initialize health bars after DOM is ready
         setTimeout(() => {
@@ -105,6 +110,69 @@ class GameState {
         
         this.startNewRound();
         this.updateUI();
+    }
+
+    setupGameOverManager() {
+        // Set up game over manager callbacks
+        gameOverManager.setOnGameRestart(() => {
+            this.restartGame();
+        });
+        
+        gameOverManager.setOnGameExit(() => {
+            this.exitToMainMenu();
+        });
+    }
+
+    checkGameOverConditions() {
+        return CombatEngine.checkGameOver(this.playerYards, this.enemyYards);
+    }
+
+    handleGameOver(gameOverResult) {
+        const gameState = {
+            round: this.round,
+            playerYards: this.playerYards,
+            enemyYards: this.enemyYards
+        };
+        
+        gameOverManager.handleGameOver(gameOverResult, gameState);
+    }
+
+    restartGame() {
+        // Reset all game state
+        this.selectedCards = new Set();
+        this.playerYards = 10;
+        this.enemyYards = 0;
+        this.round = 1;
+        this.hasDiscardedThisRound = false;
+        this.gameLog = [];
+        this.lastRoundResult = null;
+        
+        // Clear field
+        this.fieldCards = {
+            player: [],
+            enemy: []
+        };
+        
+        // Reset decks
+        this.generateInitialHand();
+        this.generateEnemyDeck();
+        
+        // Reset UI
+        this.playerYardsBar.setHealth(this.playerYards);
+        this.enemyYardsBar.setHealth(this.enemyYards);
+        
+        // Hide last round outcome
+        document.getElementById('lastRoundOutcome').style.display = 'none';
+        
+        // Start new game
+        this.startNewRound();
+        this.updateUI();
+    }
+
+    exitToMainMenu() {
+        // For now, just restart the game
+        // In the future, this would navigate to the title screen
+        this.restartGame();
     }
 
     generateInitialHand() {
@@ -579,142 +647,79 @@ class GameState {
     }
 
     endRound(playerPower) {
-        // Calculate team stats
-        const playerStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
-        const enemyStats = { rushOffense: 0, rushDefense: 0, passOffense: 0, passDefense: 0, hasQB: false };
+        // Debug logging - remove this after fixing the issue
+        console.log('=== ROUND', this.round, 'DEBUG ===');
+        console.log('Starting yards - Player:', this.playerYards, 'Enemy:', this.enemyYards);
+        console.log('Player field cards:', this.fieldCards.player);
+        console.log('Enemy field cards:', this.fieldCards.enemy);
         
-        // Calculate player stats
-        this.fieldCards.player.forEach(card => {
-            playerStats.rushOffense += card.rushOffense || 0;
-            playerStats.rushDefense += card.rushDefense || 0;
-            playerStats.passOffense += card.passOffense || 0;
-            playerStats.passDefense += card.passDefense || 0;
-            if (card.position === 'QB') playerStats.hasQB = true;
-        });
+        // Use the new CombatEngine for all combat calculations
+        const combatResult = CombatEngine.processCombatRound(
+            this.fieldCards.player,
+            this.fieldCards.enemy,
+            this.playerYards,
+            this.enemyYards,
+            this.round
+        );
         
-        // Calculate enemy stats
-        this.fieldCards.enemy.forEach(card => {
-            enemyStats.rushOffense += card.rushOffense || 0;
-            enemyStats.rushDefense += card.rushDefense || 0;
-            enemyStats.passOffense += card.passOffense || 0;
-            enemyStats.passDefense += card.passDefense || 0;
-            if (card.position === 'QB') enemyStats.hasQB = true;
-        });
-        
-        // Calculate yard gains/losses
-        let playerGain = 0;
-        let enemyGain = 0;
+        console.log('Combat result:', combatResult);
+        console.log('=== END DEBUG ===');
 
-        // Player yards calculation - can only gain offensive yards with QB
-        if (playerStats.hasQB) {
-            const rushDiff = playerStats.rushOffense - enemyStats.rushDefense;
-            const passDiff = playerStats.passOffense - enemyStats.passDefense;
-            
-            if (rushDiff > 0 || passDiff > 0) {
-                playerGain = Math.max(rushDiff, passDiff);
-            } else if (rushDiff < 0 && passDiff < 0) {
-                playerGain = Math.max(rushDiff, passDiff); // This will be negative
-            }
-        } else {
-            // No QB = no offensive yards, but can still get defensive "power points"
-            // This could be represented as preventing enemy gains rather than gaining yards yourself
-            // For now, player gains 0 offensive yards without QB
-            playerGain = 0;
-        }
-
-        // Enemy yards calculation - same rules apply
-        if (enemyStats.hasQB) {
-            const rushDiff = enemyStats.rushOffense - playerStats.rushDefense;
-            const passDiff = enemyStats.passOffense - playerStats.passDefense;
-            
-            if (rushDiff > 0 || passDiff > 0) {
-                enemyGain = Math.max(rushDiff, passDiff);
-            } else if (rushDiff < 0 && passDiff < 0) {
-                enemyGain = Math.max(rushDiff, passDiff); // This will be negative
-            }
-        } else {
-            // No QB = no offensive yards for enemy either
-            enemyGain = 0;
-        }
-                
-        // Store previous values
-        const prevPlayerYards = this.playerYards;
-        const prevEnemyYards = this.enemyYards;
-
-        // Calculate what the new yards would be
-        const newPlayerYards = this.playerYards + playerGain;
-        const newEnemyYards = this.enemyYards + enemyGain;
-
-        // Clamp to bounds (0-100)
-        this.playerYards = Math.max(0, Math.min(100, newPlayerYards));
-        this.enemyYards = Math.max(0, Math.min(100, newEnemyYards));
-
-        // Calculate the actual change that occurred (accounting for clamping)
-        const playerYardsToAdd = this.playerYards - prevPlayerYards;
-        const enemyYardsToAdd = this.enemyYards - prevEnemyYards;
+        // Update game state with new yard values
+        this.playerYards = combatResult.newPlayerYards;
+        this.enemyYards = combatResult.newEnemyYards;
 
         // Update health bars with the actual change
         if (this.playerYardsBar) {
-            this.playerYardsBar.add(playerYardsToAdd);
+            this.playerYardsBar.add(combatResult.actualPlayerChange);
         }
         if (this.enemyYardsBar) {
-            this.enemyYardsBar.add(enemyYardsToAdd);
+            this.enemyYardsBar.add(combatResult.actualEnemyChange);
         }
         
         this.updateUI();
         
-        // Create detailed message
-        const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
-        const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
-        
-        let message = `Round ${this.round} Complete!\n`;
-
-        if (playerStats.hasQB) {
-            const playerOffenseType = (playerStats.rushOffense - enemyStats.rushDefense) > (playerStats.passOffense - enemyStats.passDefense) ? 'Rush' : 'Pass';
-            message += `You: ${playerOffenseType} attack (${playerGain > 0 ? '+' : ''}${playerGain} yards)\n`;
-        } else {
-            message += `You: No QB - No offensive yards (Defense only)\n`;
-        }
-
-        if (enemyStats.hasQB) {
-            const enemyOffenseType = (enemyStats.rushOffense - playerStats.rushDefense) > (enemyStats.passOffense - playerStats.passDefense) ? 'Rush' : 'Pass';
-            message += `Enemy: ${enemyOffenseType} attack (${enemyGain > 0 ? '+' : ''}${enemyGain} yards)`;
-        } else {
-            message += `Enemy: No QB - No offensive yards (Defense only)`;
-        }
-        
-        this.showMessage(message);
+        // Show combat message
+        this.showMessage(combatResult.message);
         
         const roundData = {
             round: this.round,
-            playerGain: playerGain,
-            enemyGain: enemyGain,
+            playerGain: combatResult.playerGain,
+            enemyGain: combatResult.enemyGain,
             playerYards: this.playerYards,
             enemyYards: this.enemyYards,
-            playerOffenseType: playerOffenseType,
-            enemyOffenseType: enemyOffenseType
+            playerOffenseType: combatResult.playerOffenseType,
+            enemyOffenseType: combatResult.enemyOffenseType
         };
 
         this.addToGameLog(roundData);
         this.updateLastRoundOutcome(roundData);
 
-        setTimeout(() => {
-            this.clearField();
-            
-            this.hasDiscardedThisRound = false;
-            this.round++;
-            
-            this.startNewRound();
-        }, 3500);
-        
-        if (this.playerYards >= 100) {
-            setTimeout(() => this.showMessage("🏆 YOU WIN! Touchdown!"), 3000);
-        } else if (this.enemyYards >= 100) {
-            setTimeout(() => this.showMessage("💀 YOU LOSE! Enemy scored!"), 3000);
+        // Check for game over conditions using the combat result
+        if (combatResult.isGameOver) {
+            // Handle game over - don't start new round
+            setTimeout(() => {
+                this.handleGameOver(combatResult);
+            }, 3000);
+        } else {
+            // Continue game - start new round
+            setTimeout(() => {
+                this.clearField();
+                
+                this.hasDiscardedThisRound = false;
+                this.round++;
+                
+                this.startNewRound();
+            }, 3500);
         }
     }
 
     startNewRound() {
+        // Check if game is over before starting new round
+        if (gameOverManager.getIsGameOver()) {
+            return;
+        }
+        
         this.drawPlayerCards(6);
         this.drawEnemyCards(6);
         
