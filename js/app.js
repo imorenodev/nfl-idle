@@ -6,6 +6,23 @@ import { GameMapScreen } from './screens/GameMapScreen.js';
 import { ScreenManager } from './core/ScreenManager.js';
 import { SCREENS } from './core/GameConstants.js';
 
+// Set CSS custom property for viewport height to handle mobile browser bars
+function setVH() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+}
+
+// Initial set
+setVH();
+
+// Re-calculate on resize
+window.addEventListener('resize', setVH);
+
+// Re-calculate on orientation change
+window.addEventListener('orientationchange', () => {
+    setTimeout(setVH, 100);
+});
+
 class NFLCardBattleApp {
     constructor() {
         this.screenManager = new ScreenManager();

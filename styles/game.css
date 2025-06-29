@@ -739,7 +739,7 @@ body {
 @media (orientation: landscape) and (max-height: 500px) {
     .game-container {
         flex-direction: row;
-        height: 100vh;
+        height: calc(var(--vh, 1vh) * 100);
         width: 100vw;
         border-radius: 0;
     }
