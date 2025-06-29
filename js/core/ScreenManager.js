@@ -14,6 +14,8 @@ export class ScreenManager {
         this.onScreenChange = null;
         this.playerTeam = null;
         this.currentBattle = null;
+        this.draftedCards = [];  // Cards selected from favorite team (3 cards)
+        this.draftedDeck = [];   // Complete drafted deck (25 cards)
         this.gameProgress = {
             wins: 0,
             losses: 0,
@@ -252,15 +254,15 @@ export class ScreenManager {
     }
 
     /**
-     * Select a team and proceed to game map
+     * Select a team and proceed to team draft
      */
     selectTeam(teamId) {
         this.playerTeam = NFLTeams.getTeamById(teamId);
-        this.navigateTo(SCREENS.GAME_MAP);
+        this.navigateTo(SCREENS.TEAM_DRAFT);
         
-        // Pass team data to game map screen
-        if (this.screens.has(SCREENS.GAME_MAP)) {
-            this.screens.get(SCREENS.GAME_MAP).setPlayerTeam(this.playerTeam);
+        // Pass team data to team draft screen
+        if (this.screens.has(SCREENS.TEAM_DRAFT)) {
+            this.screens.get(SCREENS.TEAM_DRAFT).setSelectedTeam(this.playerTeam);
         }
     }
 
@@ -310,6 +312,45 @@ export class ScreenManager {
      */
     getProgress() {
         return { ...this.gameProgress };
+    }
+
+    /**
+     * Set drafted cards from team selection
+     */
+    setDraftedCards(cards) {
+        this.draftedCards = [...cards];
+        console.log('Team draft cards set:', this.draftedCards.map(c => c.name));
+    }
+
+    /**
+     * Get drafted team cards
+     */
+    getDraftedCards() {
+        return [...this.draftedCards];
+    }
+
+    /**
+     * Set complete drafted deck
+     */
+    setDraftedDeck(deck) {
+        this.draftedDeck = [...deck];
+        console.log('Complete drafted deck set:', this.draftedDeck.length, 'cards');
+    }
+
+    /**
+     * Get complete drafted deck
+     */
+    getDraftedDeck() {
+        return [...this.draftedDeck];
+    }
+
+    /**
+     * Clear draft data (for new season)
+     */
+    clearDraftData() {
+        this.draftedCards = [];
+        this.draftedDeck = [];
+        this.playerTeam = null;
     }
 
     /**

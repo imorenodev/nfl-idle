@@ -21,7 +21,7 @@ import { gameOverManager } from './core/GameOverManager.js';
 import { CardDataProvider } from './data/CardDataProvider.js';
 
 export class GameState {
-    constructor() {
+    constructor(draftedDeck = null) {
         this.selectedCards = new Set();
         this.playerYards = 20;
         this.enemyYards = 20;
@@ -30,7 +30,13 @@ export class GameState {
         this.playerYardsBar = null;
         this.enemyYardsBar = null;
 
-        this.playerDeck = CardDataProvider.getPlayerDeck();
+        // Store drafted deck for resets
+        this.draftedDeck = draftedDeck;
+        
+        // Use drafted deck if provided, otherwise use default
+        this.playerDeck = draftedDeck ? 
+            CardDataProvider.getDraftedPlayerDeck(draftedDeck) : 
+            CardDataProvider.getPlayerDeck();
         this.playerHand = [];
         this.playerDrawPile = [];
         this.playerDiscardPile = [];
@@ -130,8 +136,12 @@ export class GameState {
             enemy: []
         };
         
-        // Reset decks
-        this.playerDeck = CardDataProvider.getPlayerDeck();
+        // Reset decks (keep drafted deck if it exists)
+        if (!this.draftedDeck) {
+            this.playerDeck = CardDataProvider.getPlayerDeck();
+        } else {
+            this.playerDeck = CardDataProvider.getDraftedPlayerDeck(this.draftedDeck);
+        }
         this.enemyDeck = CardDataProvider.getEnemyDeck();
         this.generateInitialHand();
         this.generateEnemyDeck();

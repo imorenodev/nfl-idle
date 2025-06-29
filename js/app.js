@@ -1,5 +1,7 @@
 // app.js - Main application entry point with screen management
 import { TitleScreen } from './screens/TitleScreen.js';
+import { TeamDeckDraftScreen } from './screens/TeamDeckDraftScreen.js';
+import { GeneralDraftScreen } from './screens/GeneralDraftScreen.js';
 import { GameMapScreen } from './screens/GameMapScreen.js';
 import { ScreenManager } from './core/ScreenManager.js';
 import { SCREENS } from './core/GameConstants.js';
@@ -40,6 +42,18 @@ class NFLCardBattleApp {
         const titleContainer = titleScreen.create();
         document.body.appendChild(titleContainer);
         this.screenManager.registerScreen(SCREENS.TITLE, titleScreen);
+
+        // Create team deck draft screen
+        const teamDraftScreen = new TeamDeckDraftScreen(this.screenManager);
+        const teamDraftContainer = teamDraftScreen.create();
+        document.body.appendChild(teamDraftContainer);
+        this.screenManager.registerScreen(SCREENS.TEAM_DRAFT, teamDraftScreen);
+
+        // Create general draft screen
+        const generalDraftScreen = new GeneralDraftScreen(this.screenManager);
+        const generalDraftContainer = generalDraftScreen.create();
+        document.body.appendChild(generalDraftContainer);
+        this.screenManager.registerScreen(SCREENS.GENERAL_DRAFT, generalDraftScreen);
 
         // Create game map screen
         const gameMapScreen = new GameMapScreen(this.screenManager);
@@ -86,7 +100,10 @@ class NFLCardBattleApp {
     async initializeGame() {
         // Dynamically import the game when needed
         const { GameState } = await import('./game.js');
-        this.gameState = new GameState();
+        
+        // Get drafted deck if available
+        const draftedDeck = this.screenManager.getDraftedDeck();
+        this.gameState = new GameState(draftedDeck.length > 0 ? draftedDeck : null);
         
         // Initialize the game first
         this.gameState.init();
@@ -167,6 +184,17 @@ class NFLCardBattleApp {
             const playerTeam = this.screenManager.getPlayerTeam();
             const currentBattle = this.screenManager.getCurrentBattle();
             console.log(`Starting battle: ${playerTeam?.name} vs ${currentBattle?.team?.name}`);
+        } else if (newScreen === SCREENS.GAME_MAP) {
+            // Setup game map with player team data
+            const playerTeam = this.screenManager.getPlayerTeam();
+            const gameMapScreen = this.screenManager.screens.get(SCREENS.GAME_MAP);
+            
+            if (playerTeam && gameMapScreen) {
+                gameMapScreen.setPlayerTeam(playerTeam);
+                console.log(`Game map initialized for team: ${playerTeam.name}`);
+            } else {
+                console.warn('Missing player team data or game map screen for initialization');
+            }
         }
     }
 }
