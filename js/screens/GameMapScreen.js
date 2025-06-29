@@ -59,6 +59,7 @@ export class GameMapScreen {
     }
 
     setPlayerTeam(teamData) {
+        console.log('GameMapScreen.setPlayerTeam called with:', teamData);
         this.playerTeam = teamData;
         this.generateBattleSequence();
         this.updatePlayerTeamDisplay();
@@ -66,9 +67,12 @@ export class GameMapScreen {
     }
 
     generateBattleSequence() {
+        console.log('Generating battle sequence for player team:', this.playerTeam);
         // Generate a sequence of NFL teams to battle (excluding player's team)
         const allTeams = NFLTeams.getAllTeams();
+        console.log('All teams loaded:', allTeams.length);
         const enemyTeams = allTeams.filter(team => team.id !== this.playerTeam.id);
+        console.log('Enemy teams after filtering:', enemyTeams.length);
         
         // Shuffle and select teams for the season
         const shuffled = [...enemyTeams].sort(() => Math.random() - 0.5);
@@ -131,6 +135,7 @@ export class GameMapScreen {
     }
 
     renderBattles() {
+        console.log('Rendering battles:', this.battles.length);
         const container = this.container.querySelector('#battlesContainer');
         container.innerHTML = '';
 

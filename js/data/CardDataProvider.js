@@ -116,6 +116,24 @@ export class CardDataProvider {
     }
 
     /**
+     * Get a player deck from drafted cards
+     * @param {Array} draftedCards - Array of drafted card objects
+     * @returns {Array} Array of player card objects with proper IDs
+     */
+    static getDraftedPlayerDeck(draftedCards) {
+        if (!draftedCards || draftedCards.length === 0) {
+            console.warn('No drafted cards provided, using default deck');
+            return this.getPlayerDeck();
+        }
+
+        return draftedCards.map((card, index) => ({
+            ...card,
+            id: `drafted-${index}`,
+            element: null
+        }));
+    }
+
+    /**
      * Get a fresh copy of enemy deck data
      * @returns {Array} Array of enemy card objects
      */

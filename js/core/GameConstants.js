@@ -41,6 +41,8 @@ export const UI_CONFIG = {
 
 export const SCREENS = {
     TITLE: 'title',
+    TEAM_DRAFT: 'team-draft',
+    GENERAL_DRAFT: 'general-draft',
     GAME_MAP: 'game-map',
     BATTLE: 'battle',
     SHOP: 'shop',
