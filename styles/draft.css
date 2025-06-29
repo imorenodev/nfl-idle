@@ -39,6 +39,7 @@
   flex-grow: 1; /* Allows this div to grow and fill available space */
   overflow-y: auto; /* Enables vertical scrolling when content overflows */
   padding: 0 1em; /* Optional: Adds some horizontal spacing */
+  padding-bottom: 120px; /* Extra bottom padding to ensure footer buttons are accessible */
 }
 
 /* Draft Header */
