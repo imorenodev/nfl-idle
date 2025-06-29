@@ -287,9 +287,9 @@
 }
 
 .draft-choices {
-    /* display: grid;
+    display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: min(8px, 1.5vw); */
+    gap: min(8px, 1.5vw);
     margin-bottom: 30px;
     align-content: start;
     max-width: 100%;
@@ -323,11 +323,12 @@
     transform: translateY(-8px) scale(1.05);
 }
 
-.choice-card-header {
+.choice-card-header,
+.player-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
+    margin-bottom: min(8px, 1vh);
 }
 
 .player-team {
@@ -544,10 +545,10 @@
         margin-bottom: 20px;
     }
     
-    /* .draft-choices {
+    .draft-choices {
         grid-template-columns: repeat(3, 1fr);
         gap: min(8px, 1.5vw);
-    } */
+    }
     
     .deck-cards-grid {
         grid-template-columns: repeat(3, 1fr);

@@ -150,14 +150,10 @@ export class GeneralDraftScreen {
         const teamColor = this.getTeamColor(player.team);
 
         cardElement.innerHTML = `
-            <div class="choice-card-header">
+            <div class="player-card-header">
                 <div class="player-cost">${player.cost}</div>
                 <div class="player-position" style="background-color: ${positionColor}">${player.position}</div>
                 <div class="player-rarity">${player.rarity}</div>
-            </div>
-            
-            <div class="player-team" style="background-color: ${teamColor}">
-                ${player.team}
             </div>
             
             <div class="player-image">
@@ -169,7 +165,6 @@ export class GeneralDraftScreen {
             </div>
             
             <div class="player-name">${player.name}</div>
-            <div class="team-name">${player.teamName}</div>
             
             <div class="player-stats">
                 <div class="stat-row">
@@ -422,40 +417,30 @@ export class GeneralDraftScreen {
         cardElement.dataset.playerId = cardId;
 
         cardElement.innerHTML = `
-            <div class="choice-card-header">
+            <div class="player-card-header">
                 <div class="player-cost">${player.cost}</div>
                 <div class="player-position" style="background-color: ${this.getPositionColor(player.position)}">${player.position}</div>
                 <div class="player-rarity">${player.rarity}</div>
             </div>
             
             <div class="player-image">
-                <div style="color: white; font-weight: bold; font-size: clamp(8px, 2vw, 12px);">
-                    ${player.name}
-                </div>
+                <img src="./assets/images/${player.position.toLowerCase()}.png" 
+                     alt="${player.name} (${player.position})" 
+                     class="player-photo"
+                     loading="lazy"
+                     onerror="this.src='./assets/images/mahomes-profile.png'; this.onerror=null;">
             </div>
             
             <div class="player-name">${player.name}</div>
             
-            <div class="team-name" style="background-color: ${this.getTeamColor(player.team)}">
-                ${player.team || 'NFL'}
-            </div>
-            
             <div class="player-stats">
                 <div class="stat-row">
-                    <span class="stat-label">Rush O:</span>
-                    <span class="stat-value">${player.rushOffense}</span>
+                    <span class="stat-label">Rush:</span>
+                    <span class="stat-value">${player.rushOffense}/${player.rushDefense}</span>
                 </div>
                 <div class="stat-row">
-                    <span class="stat-label">Pass O:</span>
-                    <span class="stat-value">${player.passOffense}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Rush D:</span>
-                    <span class="stat-value">${player.rushDefense}</span>
-                </div>
-                <div class="stat-row">
-                    <span class="stat-label">Pass D:</span>
-                    <span class="stat-value">${player.passDefense}</span>
+                    <span class="stat-label">Pass:</span>
+                    <span class="stat-value">${player.passOffense}/${player.passDefense}</span>
                 </div>
             </div>
         `;
