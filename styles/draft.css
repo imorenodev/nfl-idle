@@ -13,8 +13,10 @@
     left: 0;
     z-index: 100; /* Lower z-index, only show when active */
     overflow-y: auto;
+    overflow-x: hidden;
     padding: 20px;
     box-sizing: border-box;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
 }
 
 /* Draft Header */
@@ -497,15 +499,23 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+    .team-draft-screen,
+    .general-draft-screen {
+        padding: 15px;
+        padding-bottom: 20px; /* Extra bottom padding for mobile */
+    }
+    
     .draft-header {
         flex-direction: column;
-        gap: 20px;
+        gap: 15px;
         text-align: center;
+        margin-bottom: 20px;
     }
     
     .team-players-grid {
         grid-template-columns: repeat(3, 1fr);
         gap: min(8px, 1.5vw);
+        margin-bottom: 20px;
     }
     
     /* .draft-choices {
@@ -530,6 +540,8 @@
     .draft-footer {
         flex-direction: column;
         gap: 15px;
+        margin-top: 20px;
+        padding-bottom: 10px; /* Extra padding at bottom */
     }
     
     .draft-options {
@@ -541,6 +553,10 @@
     .draft-button {
         width: 100%;
         max-width: 300px;
+    }
+    
+    .drafted-deck-preview {
+        margin-bottom: 15px;
     }
 }
 
@@ -584,6 +600,35 @@
 .deck-review-card:hover {
     transform: none;
     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Scrollable draft screens */
+.team-draft-screen,
+.general-draft-screen {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.team-draft-screen::-webkit-scrollbar,
+.general-draft-screen::-webkit-scrollbar {
+    width: 8px;
+}
+
+.team-draft-screen::-webkit-scrollbar-track,
+.general-draft-screen::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.team-draft-screen::-webkit-scrollbar-thumb,
+.general-draft-screen::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.team-draft-screen::-webkit-scrollbar-thumb:hover,
+.general-draft-screen::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* Scrollable deck review */
