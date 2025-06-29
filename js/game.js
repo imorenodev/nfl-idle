@@ -328,6 +328,7 @@ export class GameState {
     createFieldCard(card, type) {
         const fieldCard = document.createElement('div');
         fieldCard.className = `field-card ${type}`;
+        fieldCard.dataset.cardId = card.id;
         fieldCard.innerHTML = `
             <div class="field-card-header">
                 <div class="field-card-cost">${card.cost}</div>
@@ -417,8 +418,8 @@ export class GameState {
         }, 1000);
 
         // Step 4: Process the round (after all animations)
-        setTimeout(() => {
-            this.processPlayedCards();
+        setTimeout(async () => {
+            await this.processPlayedCards();
         }, 1500);
     }
 
@@ -495,7 +496,7 @@ export class GameState {
         });
     }
 
-    processPlayedCards() {
+    async processPlayedCards() {
         // Remove all cards from hand (both played and discarded)
         this.playerHand = [];
         
@@ -514,7 +515,7 @@ export class GameState {
         this.renderFieldCards();
         
         // Process the round
-        this.endRound(0); // totalPower parameter is not used in new CombatEngine
+        await this.endRound(0); // totalPower parameter is not used in new CombatEngine
     }
 
     discardSelected() {
@@ -708,7 +709,38 @@ export class GameState {
         return this.enemyDiscardPile.length;
     }
 
-    endRound(playerPower) {
+    async endRound(playerPower) {
+        const statsDisplay = document.getElementById('stats-display');
+
+        // 1. Show Enemy Defense
+        const enemyStats = CombatEngine.calculateTeamStats(this.fieldCards.enemy);
+        statsDisplay.innerHTML = `Enemy Defense<br>Rush: ${enemyStats.rushDefense} | Pass: ${enemyStats.passDefense}`;
+        statsDisplay.style.display = 'block';
+        this.highlightCards(this.fieldCards.enemy, true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        this.highlightCards(this.fieldCards.enemy, false);
+
+        // 2. Show Player Offense
+        const playerStats = CombatEngine.calculateTeamStats(this.fieldCards.player);
+        statsDisplay.innerHTML = `Your Offense<br>Rush: ${playerStats.rushOffense} | Pass: ${playerStats.passOffense}`;
+        this.highlightCards(this.fieldCards.player, true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        this.highlightCards(this.fieldCards.player, false);
+
+        // 3. Show Player Defense
+        statsDisplay.innerHTML = `Your Defense<br>Rush: ${playerStats.rushDefense} | Pass: ${playerStats.passDefense}`;
+        this.highlightCards(this.fieldCards.player, true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        this.highlightCards(this.fieldCards.player, false);
+
+        // 4. Show Enemy Offense
+        statsDisplay.innerHTML = `Enemy Offense<br>Rush: ${enemyStats.rushOffense} | Pass: ${enemyStats.passOffense}`;
+        this.highlightCards(this.fieldCards.enemy, true);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+        this.highlightCards(this.fieldCards.enemy, false);
+
+        statsDisplay.style.display = 'none';
+
         // Use the new CombatEngine for all combat calculations
         const combatResult = CombatEngine.processCombatRound(
             this.fieldCards.player,
@@ -865,6 +897,19 @@ export class GameState {
         // Fallback to mahomes image if position not found
         console.warn(`Position image not found for: ${position}, using fallback`);
         return './assets/images/mahomes-profile.png';
+    }
+
+    highlightCards(cards, highlight) {
+        cards.forEach(card => {
+            const cardElement = document.querySelector(`[data-card-id="${card.id}"]`);
+            if (cardElement) {
+                if (highlight) {
+                    cardElement.classList.add('highlighted');
+                } else {
+                    cardElement.classList.remove('highlighted');
+                }
+            }
+        });
     }
 
     updateUI() {
