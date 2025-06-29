@@ -1,8 +1,7 @@
 /* Draft Screens Styling */
 
 /* Common Draft Screen Layout */
-.team-draft-screen,
-.general-draft-screen {
+.team-draft-screen {
     width: 100vw;
     height: calc(var(--vh, 1vh) * 100);
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
@@ -17,6 +16,29 @@
     padding: 20px;
     box-sizing: border-box;
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+/* Common Draft Screen Layout */
+.general-draft-screen {
+    width: 100vw;
+    height: 100vh;
+    background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+    display: none; 
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100; /* Lower z-index, only show when active */
+    overflow: hidden;
+    padding: 20px;
+    box-sizing: border-box;
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+}
+
+.draft-content-scrollable {
+  flex-grow: 1; /* Allows this div to grow and fill available space */
+  overflow-y: auto; /* Enables vertical scrolling when content overflows */
+  padding: 0 1em; /* Optional: Adds some horizontal spacing */
 }
 
 /* Draft Header */

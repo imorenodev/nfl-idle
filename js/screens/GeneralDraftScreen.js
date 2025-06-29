@@ -18,53 +18,55 @@ export class GeneralDraftScreen {
         this.container = document.createElement('div');
         this.container.className = 'general-draft-screen';
         this.container.innerHTML = `
-            <div class="draft-header">
-                <div class="draft-title">
-                    <h1>General Draft</h1>
-                    <p class="draft-subtitle">Build your 25-card deck</p>
-                </div>
-                
-                <div class="draft-progress">
-                    <div class="deck-status">
-                        <span class="deck-count" id="deckCount">${this.draftedCards.length}/${this.targetDeckSize}</span>
-                        <span class="round-info">Round <span id="currentRound">${this.currentRound}</span>/${this.maxRounds}</span>
+            <div class="draft-content-scrollable">
+                <div class="draft-header">
+                    <div class="draft-title">
+                        <h1>General Draft</h1>
+                        <p class="draft-subtitle">Build your 25-card deck</p>
                     </div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
+                    
+                    <div class="draft-progress">
+                        <div class="deck-status">
+                            <span class="deck-count" id="deckCount">${this.draftedCards.length}/${this.targetDeckSize}</span>
+                            <span class="round-info">Round <span id="currentRound">${this.currentRound}</span>/${this.maxRounds}</span>
+                        </div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <div class="draft-instruction" id="draftInstruction">
-                Choose 1 card from the 3 options below:
-            </div>
-
-            <div class="draft-choices" id="draftChoices">
-                <!-- Draft choices will be rendered here -->
-            </div>
-
-            <div class="drafted-deck-preview">
-                <h3>Your Deck Preview</h3>
-                <div class="deck-summary" id="deckSummary">
-                    <!-- Deck composition summary -->
+                <div class="draft-instruction" id="draftInstruction">
+                    Choose 1 card from the 3 options below:
                 </div>
-            </div>
 
-            <div class="draft-footer">
-                <div class="draft-options" id="draftOptions">
-                    <button class="draft-button auto-draft-button" id="autoDraftButton">
-                        🎲 Auto-Draft Remaining
+                <div class="draft-choices" id="draftChoices">
+                    <!-- Draft choices will be rendered here -->
+                </div>
+
+                <div class="drafted-deck-preview">
+                    <h3>Your Deck Preview</h3>
+                    <div class="deck-summary" id="deckSummary">
+                        <!-- Deck composition summary -->
+                    </div>
+                </div>
+
+                <div class="draft-footer">
+                    <div class="draft-options" id="draftOptions">
+                        <button class="draft-button auto-draft-button" id="autoDraftButton">
+                            🎲 Auto-Draft Remaining
+                        </button>
+                        <button class="draft-button manual-draft-button" id="manualDraftButton">
+                            ✋ Continue Manual Draft
+                        </button>
+                    </div>
+                    <button class="draft-button complete-button" id="completeDraftButton" style="display: none;">
+                        Complete Draft & Start Season →
                     </button>
-                    <button class="draft-button manual-draft-button" id="manualDraftButton">
-                        ✋ Continue Manual Draft
+                    <button class="draft-button back-button" id="backButton">
+                        ← Back to Team Draft
                     </button>
                 </div>
-                <button class="draft-button complete-button" id="completeDraftButton" style="display: none;">
-                    Complete Draft & Start Season →
-                </button>
-                <button class="draft-button back-button" id="backButton">
-                    ← Back to Team Draft
-                </button>
             </div>
         `;
 
