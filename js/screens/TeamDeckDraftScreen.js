@@ -17,36 +17,38 @@ export class TeamDeckDraftScreen {
         this.container = document.createElement('div');
         this.container.className = 'team-draft-screen';
         this.container.innerHTML = `
-            <div class="draft-header">
-                <div class="team-info" id="teamInfo">
-                    <div class="team-logo" id="teamLogo"></div>
-                    <div class="team-details">
-                        <h1 id="teamName">Team Draft</h1>
-                        <p class="draft-instructions">Choose 3 players from your favorite team</p>
+            <div class="draft-content-scrollable">
+                <div class="draft-header">
+                    <div class="team-info" id="teamInfo">
+                        <div class="team-logo" id="teamLogo"></div>
+                        <div class="team-details">
+                            <h1 id="teamName">Team Draft</h1>
+                            <p class="draft-instructions">Choose 3 players from your favorite team</p>
+                        </div>
+                    </div>
+                    
+                    <div class="draft-progress">
+                        <span class="progress-text">
+                            Selected: <span id="selectedCount">0</span>/${this.maxSelections}
+                        </span>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progressFill"></div>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="draft-progress">
-                    <span class="progress-text">
-                        Selected: <span id="selectedCount">0</span>/${this.maxSelections}
-                    </span>
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
+
+                <div class="team-players-grid" id="teamPlayersGrid">
+                    <!-- Team players will be rendered here -->
                 </div>
-            </div>
 
-            <div class="team-players-grid" id="teamPlayersGrid">
-                <!-- Team players will be rendered here -->
-            </div>
-
-            <div class="draft-footer">
-                <button class="draft-button confirm-button" id="confirmButton" disabled>
-                    Continue to General Draft →
-                </button>
-                <button class="draft-button back-button" id="backButton">
-                    ← Back
-                </button>
+                <div class="draft-footer">
+                    <button class="draft-button confirm-button" id="confirmButton" disabled>
+                        Continue to General Draft →
+                    </button>
+                    <button class="draft-button back-button" id="backButton">
+                        ← Back
+                    </button>
+                </div>
             </div>
         `;
 
