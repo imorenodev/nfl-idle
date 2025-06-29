@@ -118,9 +118,21 @@ class NFLCardBattleApp {
         
         if (mapScreen && currentBattle) {
             if (playerWon) {
-                // Player won - advance to next battle
-                mapScreen.onBattleCompleted(currentBattle.id, true);
-                console.log(`Player won battle ${currentBattle.id} - next battle unlocked`);
+                // Check if this was the Super Bowl (final battle)
+                const isFinalBattle = currentBattle.id === 'superbowl';
+                
+                if (isFinalBattle) {
+                    // Player won Super Bowl - show celebration then reset for new season
+                    mapScreen.onBattleCompleted(currentBattle.id, true); // This shows celebration
+                    setTimeout(() => {
+                        mapScreen.resetProgression(); // Reset after brief celebration
+                    }, 2000);
+                    console.log(`Player won Super Bowl - championship celebration then new season`);
+                } else {
+                    // Regular battle win - advance to next battle
+                    mapScreen.onBattleCompleted(currentBattle.id, true);
+                    console.log(`Player won battle ${currentBattle.id} - next battle unlocked`);
+                }
             } else {
                 // Player lost - reset progression back to game 1
                 mapScreen.resetProgression();

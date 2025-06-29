@@ -94,6 +94,24 @@ export class GameOverManager {
         
         const modalContent = this.createGameOverContent();
         
+        // Determine button text based on win/loss and battle context
+        const playerWon = winner === 'player';
+        let continueButtonText;
+        
+        if (playerWon) {
+            // Check if this was the final battle (Super Bowl)
+            const currentBattle = window.nflApp?.screenManager?.getCurrentBattle();
+            const isFinalBattle = currentBattle?.id === 'superbowl';
+            
+            if (isFinalBattle) {
+                continueButtonText = '🏆 Start New Season';
+            } else {
+                continueButtonText = '➡️ Continue Season';
+            }
+        } else {
+            continueButtonText = '🔄 Restart Season';
+        }
+        
         await modalManager.createModal('gameOverModal', {
             title: GAME_OVER_MESSAGES.GAME_OVER_TITLE,
             content: modalContent,
@@ -104,7 +122,7 @@ export class GameOverManager {
             width: 'min(400px, 90vw)',
             buttons: [
                 {
-                    text: '🔄 Play Again',
+                    text: continueButtonText,
                     primary: true,
                     onClick: () => this.restartGame()
                 },
@@ -227,7 +245,16 @@ export class GameOverManager {
         
         this.resetGameOverState();
         
-        messageSystem.showSuccess('New game started!', { duration: 1500 });
+        // Show contextual message based on win/loss and battle context
+        let message;
+        if (playerWon) {
+            const currentBattle = window.nflApp?.screenManager?.getCurrentBattle();
+            const isFinalBattle = currentBattle?.id === 'superbowl';
+            message = isFinalBattle ? 'New season started!' : 'Next battle awaits!';
+        } else {
+            message = 'Season restarted!';
+        }
+        messageSystem.showSuccess(message, { duration: 1500 });
     }
 
     /**
