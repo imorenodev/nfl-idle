@@ -4,7 +4,7 @@
 .team-draft-screen,
 .general-draft-screen {
     width: 100vw;
-    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
     display: none; /* Hidden by default */
     flex-direction: column;
@@ -388,7 +388,7 @@
 /* Draft Footer */
 .draft-footer {
     display: flex;
-    justify-content: space-between;
+    justify-content: flex-start;
     align-items: center;
     margin-top: auto;
     padding-top: 20px;
@@ -403,6 +403,10 @@
     flex: 1;
     max-width: 300px;
     margin: 0 20px;
+}
+
+.back-button {
+    margin-left: auto; /* Push back button to the right */
 }
 
 .draft-button {
@@ -548,6 +552,19 @@
         max-width: 100%;
         margin: 0;
         order: 1;
+    }
+    
+    .back-button {
+        margin-left: 0; /* Remove auto margin on mobile */
+        order: 3; /* Ensure back button is last on mobile */
+    }
+    
+    .complete-button {
+        order: 2; /* Complete button before back button */
+    }
+    
+    .confirm-button {
+        order: 1; /* Confirm button first */
     }
     
     .draft-button {

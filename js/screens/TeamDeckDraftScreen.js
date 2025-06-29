@@ -41,11 +41,11 @@ export class TeamDeckDraftScreen {
             </div>
 
             <div class="draft-footer">
-                <button class="draft-button back-button" id="backButton">
-                    ← Back
-                </button>
                 <button class="draft-button confirm-button" id="confirmButton" disabled>
                     Continue to General Draft →
+                </button>
+                <button class="draft-button back-button" id="backButton">
+                    ← Back
                 </button>
             </div>
         `;

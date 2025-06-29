@@ -51,9 +51,6 @@ export class GeneralDraftScreen {
             </div>
 
             <div class="draft-footer">
-                <button class="draft-button back-button" id="backButton">
-                    ← Back to Team Draft
-                </button>
                 <div class="draft-options" id="draftOptions">
                     <button class="draft-button auto-draft-button" id="autoDraftButton">
                         🎲 Auto-Draft Remaining
@@ -64,6 +61,9 @@ export class GeneralDraftScreen {
                 </div>
                 <button class="draft-button complete-button" id="completeDraftButton" style="display: none;">
                     Complete Draft & Start Season →
+                </button>
+                <button class="draft-button back-button" id="backButton">
+                    ← Back to Team Draft
                 </button>
             </div>
         `;

@@ -1,20 +1,3 @@
-// Set CSS custom property for viewport height
-function setVH() {
-    let vh = window.innerHeight * 0.01;
-    document.documentElement.style.setProperty('--vh', `${vh}px`);
-}
-
-// Initial set
-setVH();
-
-// Re-calculate on resize
-window.addEventListener('resize', setVH);
-
-// Re-calculate on orientation change
-window.addEventListener('orientationchange', () => {
-    setTimeout(setVH, 100);
-});
-
 // Import game over functionality
 import { CombatEngine } from './core/CombatEngine.js';
 import { gameOverManager } from './core/GameOverManager.js';
