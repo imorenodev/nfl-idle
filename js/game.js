@@ -546,7 +546,11 @@ export class GameState {
                     name: card.name,
                     cost: card.cost,
                     rarity: card.rarity,
-                    position: card.position
+                    position: card.position,
+                    rushOffense: card.rushOffense,
+                    rushDefense: card.rushDefense,
+                    passOffense: card.passOffense,
+                    passDefense: card.passDefense
                 });
                 cardsToDiscard.push(cardIndex);
             }
@@ -583,7 +587,11 @@ export class GameState {
                 name: card.name,
                 cost: card.cost,
                 rarity: card.rarity,
-                position: card.position
+                position: card.position,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense
             });
         });
 
@@ -592,7 +600,11 @@ export class GameState {
                 name: card.name,
                 cost: card.cost,
                 rarity: card.rarity,
-                position: card.position
+                position: card.position,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense
             });
         });
         
@@ -650,7 +662,11 @@ export class GameState {
                 name: card.name,
                 cost: card.cost,
                 rarity: card.rarity,
-                position: card.position
+                position: card.position,
+                rushOffense: card.rushOffense,
+                rushDefense: card.rushDefense,
+                passOffense: card.passOffense,
+                passDefense: card.passDefense
             });
         });
         

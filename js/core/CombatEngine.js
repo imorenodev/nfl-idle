@@ -61,11 +61,37 @@ export class CombatEngine {
             totalPower: 0
         };
 
-        cards.forEach(card => {
-            stats.rushOffense += card.rushOffense || 0;
-            stats.rushDefense += card.rushDefense || 0;
-            stats.passOffense += card.passOffense || 0;
-            stats.passDefense += card.passDefense || 0;
+        console.log(`=== CALCULATING TEAM STATS ===`);
+        console.log(`Cards count: ${cards.length}`);
+        
+        // Check if we have null cards or cards with missing stats
+        if (cards.length === 0) {
+            console.warn('WARNING: Empty cards array passed to calculateTeamStats!');
+        }
+        
+        cards.forEach((card, index) => {
+            // Validate card data
+            if (!card) {
+                console.error(`Card ${index + 1} is null/undefined!`);
+                return;
+            }
+            
+            const rushOff = card.rushOffense || 0;
+            const rushDef = card.rushDefense || 0;
+            const passOff = card.passOffense || 0;
+            const passDef = card.passDefense || 0;
+            
+            console.log(`Card ${index + 1}: ${card.name} (${card.position}) - Rush Off: ${rushOff}, Rush Def: ${rushDef}, Pass Off: ${passOff}, Pass Def: ${passDef}`);
+            
+            // Check for invalid numbers
+            if (isNaN(rushOff) || isNaN(rushDef) || isNaN(passOff) || isNaN(passDef)) {
+                console.error(`Invalid stats detected for card: ${card.name}`);
+            }
+            
+            stats.rushOffense += rushOff;
+            stats.rushDefense += rushDef;
+            stats.passOffense += passOff;
+            stats.passDefense += passDef;
             stats.totalPower += (card.cost || 0) + (card.rarity || 0);
             
             if (card.position === 'QB') {
@@ -73,6 +99,7 @@ export class CombatEngine {
             }
         });
 
+        console.log(`Final Team Stats: Rush Off ${stats.rushOffense}, Rush Def ${stats.rushDefense}, Pass Off ${stats.passOffense}, Pass Def ${stats.passDefense}, Has QB: ${stats.hasQB}`);
         return stats;
     }
 
@@ -169,6 +196,21 @@ export class CombatEngine {
         playerBreakdown.defensiveDominance = enemyDefensiveDominance;
         enemyBreakdown.defensiveDominance = playerDefensiveDominance;
 
+        // Final debug logging
+        console.log(`=== FINAL COMBAT RESULT ===`);
+        console.log(`Player: ${playerOffenseType} = ${playerGain} yards`);
+        console.log(`Enemy: ${enemyOffenseType} = ${enemyGain} yards`);
+        console.log(`Player Stats: Rush Off ${playerStats.rushOffense}, Pass Off ${playerStats.passOffense}, Rush Def ${playerStats.rushDefense}, Pass Def ${playerStats.passDefense}`);
+        console.log(`Enemy Stats: Rush Off ${enemyStats.rushOffense}, Pass Off ${enemyStats.passOffense}, Rush Def ${enemyStats.rushDefense}, Pass Def ${enemyStats.passDefense}`);
+        
+        // Check for potential tie condition (both teams gain same yards)
+        if (playerGain === enemyGain) {
+            console.warn(`⚠️ POTENTIAL TIE DETECTED: Both teams gaining ${playerGain} yards`);
+            if (playerGain === 0) {
+                console.warn(`🚫 ZERO GAIN TIE: Both teams gaining 0 yards - this may cause infinite stalemate!`);
+            }
+        }
+        
         return {
             playerGain,
             enemyGain,
@@ -239,17 +281,33 @@ export class CombatEngine {
     static applyYardChanges(currentPlayerYards, currentEnemyYards, playerGain, enemyGain) {
         const { MIN, MAX } = COMBAT_CALCULATION.YARD_BOUNDS;
         
+        console.log(`=== APPLYING YARD CHANGES ===`);
+        console.log(`Current: Player ${currentPlayerYards}, Enemy ${currentEnemyYards}`);
+        console.log(`Gains: Player ${playerGain}, Enemy ${enemyGain}`);
+        
         // Calculate what the new yards would be
         const newPlayerYards = currentPlayerYards + playerGain;
         const newEnemyYards = currentEnemyYards + enemyGain;
+        
+        console.log(`Calculated new yards: Player ${newPlayerYards}, Enemy ${newEnemyYards}`);
 
+        // Check for game over conditions BEFORE clamping
+        const gameOverCheck = this.checkGameOver(newPlayerYards, newEnemyYards);
+        if (gameOverCheck.isGameOver) {
+            console.log(`🚨 GAME OVER DETECTED BEFORE CLAMPING: ${gameOverCheck.type} - ${gameOverCheck.winner} wins! (Player: ${newPlayerYards}, Enemy: ${newEnemyYards})`);
+        }
+        
         // Clamp to bounds
         const clampedPlayerYards = Math.max(MIN, Math.min(MAX, newPlayerYards));
         const clampedEnemyYards = Math.max(MIN, Math.min(MAX, newEnemyYards));
+        
+        console.log(`Clamped yards: Player ${clampedPlayerYards}, Enemy ${clampedEnemyYards}`);
 
         // Calculate the actual change that occurred (accounting for clamping)
         const actualPlayerChange = clampedPlayerYards - currentPlayerYards;
         const actualEnemyChange = clampedEnemyYards - currentEnemyYards;
+        
+        console.log(`Actual changes: Player ${actualPlayerChange}, Enemy ${actualEnemyChange}`);
 
         return {
             newPlayerYards: clampedPlayerYards,
@@ -257,7 +315,8 @@ export class CombatEngine {
             actualPlayerChange,
             actualEnemyChange,
             wasPlayerClamped: newPlayerYards !== clampedPlayerYards,
-            wasEnemyClamped: newEnemyYards !== clampedEnemyYards
+            wasEnemyClamped: newEnemyYards !== clampedEnemyYards,
+            gameOverResult: gameOverCheck  // Include game over check result
         };
     }
 
@@ -364,6 +423,16 @@ export class CombatEngine {
      * @returns {Object} Complete combat result
      */
     static processCombatRound(playerCards, enemyCards, currentPlayerYards, currentEnemyYards, round) {
+        console.log(`\n🏈 ===== ROUND ${round} COMBAT PROCESSING =====`);
+        console.log(`Starting yards: Player ${currentPlayerYards}, Enemy ${currentEnemyYards}`);
+        
+        // SPECIAL DEBUGGING FOR ROUNDS 6-7
+        if (round >= 6 && round <= 7) {
+            console.log(`🔍 ROUND ${round} DEEP DEBUG - INVESTIGATING TIE BUG:`);
+            console.log(`Player cards:`, playerCards.map(c => `${c.name}(${c.position})`));
+            console.log(`Enemy cards:`, enemyCards.map(c => `${c.name}(${c.position})`));
+        }
+        
         // Calculate team stats
         const playerStats = this.calculateTeamStats(playerCards);
         const enemyStats = this.calculateTeamStats(enemyCards);
@@ -379,8 +448,8 @@ export class CombatEngine {
             combatResult.enemyGain
         );
 
-        // Check game over
-        const gameStatus = this.checkGameOver(yardResult.newPlayerYards, yardResult.newEnemyYards);
+        // Use game over result from applyYardChanges (checked before clamping)
+        const gameStatus = yardResult.gameOverResult;
 
         // Generate message
         const message = this.generateCombatMessage(combatResult, round);
