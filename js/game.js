@@ -716,28 +716,28 @@ export class GameState {
         const enemyStats = CombatEngine.calculateTeamStats(this.fieldCards.enemy);
         statsDisplay.innerHTML = `Enemy Defense<br>Rush: ${enemyStats.rushDefense} | Pass: ${enemyStats.passDefense}`;
         statsDisplay.style.display = 'block';
-        this.highlightCards(this.fieldCards.enemy, true);
+        this.highlightDefensiveCards(this.fieldCards.enemy, true);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightCards(this.fieldCards.enemy, false);
+        this.highlightDefensiveCards(this.fieldCards.enemy, false);
 
         // 2. Show Player Offense
         const playerStats = CombatEngine.calculateTeamStats(this.fieldCards.player);
         statsDisplay.innerHTML = `Your Offense<br>Rush: ${playerStats.rushOffense} | Pass: ${playerStats.passOffense}`;
-        this.highlightCards(this.fieldCards.player, true);
+        this.highlightOffensiveCards(this.fieldCards.player, true);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightCards(this.fieldCards.player, false);
+        this.highlightOffensiveCards(this.fieldCards.player, false);
 
         // 3. Show Player Defense
         statsDisplay.innerHTML = `Your Defense<br>Rush: ${playerStats.rushDefense} | Pass: ${playerStats.passDefense}`;
-        this.highlightCards(this.fieldCards.player, true);
+        this.highlightDefensiveCards(this.fieldCards.player, true);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightCards(this.fieldCards.player, false);
+        this.highlightDefensiveCards(this.fieldCards.player, false);
 
         // 4. Show Enemy Offense
         statsDisplay.innerHTML = `Enemy Offense<br>Rush: ${enemyStats.rushOffense} | Pass: ${enemyStats.passOffense}`;
-        this.highlightCards(this.fieldCards.enemy, true);
+        this.highlightOffensiveCards(this.fieldCards.enemy, true);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightCards(this.fieldCards.enemy, false);
+        this.highlightOffensiveCards(this.fieldCards.enemy, false);
 
         statsDisplay.style.display = 'none';
 
@@ -899,8 +899,13 @@ export class GameState {
         return './assets/images/mahomes-profile.png';
     }
 
-    highlightCards(cards, highlight) {
+    highlightCards(cards, highlight, positionFilter = null) {
         cards.forEach(card => {
+            // Filter by position if specified
+            if (positionFilter && !positionFilter.includes(card.position)) {
+                return;
+            }
+            
             const cardElement = document.querySelector(`[data-card-id="${card.id}"]`);
             if (cardElement) {
                 if (highlight) {
@@ -910,6 +915,16 @@ export class GameState {
                 }
             }
         });
+    }
+
+    highlightDefensiveCards(cards, highlight) {
+        const defensivePositions = ['S', 'CB', 'DT', 'DE', 'LB'];
+        this.highlightCards(cards, highlight, defensivePositions);
+    }
+
+    highlightOffensiveCards(cards, highlight) {
+        const offensivePositions = ['QB', 'WR', 'RB', 'TE'];
+        this.highlightCards(cards, highlight, offensivePositions);
     }
 
     updateUI() {
