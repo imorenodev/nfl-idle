@@ -54,6 +54,14 @@ export class GeneralDraftScreen {
                 <button class="draft-button back-button" id="backButton">
                     ← Back to Team Draft
                 </button>
+                <div class="draft-options" id="draftOptions">
+                    <button class="draft-button auto-draft-button" id="autoDraftButton">
+                        🎲 Auto-Draft Remaining
+                    </button>
+                    <button class="draft-button manual-draft-button" id="manualDraftButton">
+                        ✋ Continue Manual Draft
+                    </button>
+                </div>
                 <button class="draft-button complete-button" id="completeDraftButton" style="display: none;">
                     Complete Draft & Start Season →
                 </button>
@@ -67,6 +75,8 @@ export class GeneralDraftScreen {
     setupEventListeners() {
         const backButton = this.container.querySelector('#backButton');
         const completeDraftButton = this.container.querySelector('#completeDraftButton');
+        const autoDraftButton = this.container.querySelector('#autoDraftButton');
+        const manualDraftButton = this.container.querySelector('#manualDraftButton');
 
         backButton.addEventListener('click', () => {
             this.screenManager.showScreen(SCREENS.TEAM_DRAFT);
@@ -74,6 +84,15 @@ export class GeneralDraftScreen {
 
         completeDraftButton.addEventListener('click', () => {
             this.completeDraft();
+        });
+
+        autoDraftButton.addEventListener('click', () => {
+            this.autoDraftRemaining();
+        });
+
+        manualDraftButton.addEventListener('click', () => {
+            this.hideDraftOptions();
+            this.startNextRound();
         });
     }
 
@@ -88,7 +107,7 @@ export class GeneralDraftScreen {
         this.updateDeckSummary();
         
         if (this.draftedCards.length < this.targetDeckSize) {
-            this.startNextRound();
+            this.showDraftOptions();
         } else {
             this.showDraftComplete();
         }
@@ -270,8 +289,10 @@ export class GeneralDraftScreen {
         const completeDraftButton = this.container.querySelector('#completeDraftButton');
         const backButton = this.container.querySelector('#backButton');
         
-        instruction.innerHTML = '<span style="color: #4CAF50; font-size: 1.2em;">🎉 Draft Complete! Your 25-card deck is ready!</span>';
-        choicesContainer.innerHTML = '<div class="draft-complete-message">Your deck is complete and ready for battle!</div>';
+        instruction.innerHTML = '<span style="color: #4CAF50; font-size: 1.2em;">🎉 Draft Complete! Review your 25-card deck below:</span>';
+        
+        // Show all drafted cards in the choices container
+        this.renderDraftedDeck(choicesContainer);
         
         completeDraftButton.style.display = 'block';
         backButton.style.display = 'none';
@@ -296,6 +317,148 @@ export class GeneralDraftScreen {
         this.screenManager.showScreen(SCREENS.GAME_MAP);
         
         console.log('Draft completed! Final deck:', this.draftedCards);
+    }
+
+    showDraftOptions() {
+        const draftOptions = this.container.querySelector('#draftOptions');
+        const instruction = this.container.querySelector('#draftInstruction');
+        const choicesContainer = this.container.querySelector('#draftChoices');
+        
+        draftOptions.style.display = 'flex';
+        instruction.innerHTML = `
+            <div style="text-align: center;">
+                <p>You have ${this.draftedCards.length}/${this.targetDeckSize} cards in your deck.</p>
+                <p>Choose how to draft the remaining ${this.targetDeckSize - this.draftedCards.length} cards:</p>
+            </div>
+        `;
+        choicesContainer.innerHTML = '';
+    }
+
+    hideDraftOptions() {
+        const draftOptions = this.container.querySelector('#draftOptions');
+        draftOptions.style.display = 'none';
+    }
+
+    autoDraftRemaining() {
+        const remainingCards = this.targetDeckSize - this.draftedCards.length;
+        
+        for (let i = 0; i < remainingCards; i++) {
+            // Get 3 random choices excluding already drafted cards
+            const excludeIds = this.draftedCards.map(card => card.id);
+            const choices = getRandomDraftChoices(excludeIds);
+            
+            // Pick the first choice (random selection)
+            const selectedCard = choices[0];
+            this.draftedCards.push(selectedCard);
+            
+            console.log(`Auto-drafted: ${selectedCard.name} (${selectedCard.position}) - Deck: ${this.draftedCards.length}/${this.targetDeckSize}`);
+        }
+        
+        this.hideDraftOptions();
+        this.updateProgress();
+        this.updateDeckSummary();
+        this.showDraftComplete();
+    }
+
+    renderDraftedDeck(container) {
+        container.innerHTML = '';
+        container.style.maxHeight = '60vh';
+        container.style.overflowY = 'auto';
+        
+        // Group cards by source (team vs general draft)
+        const teamCards = this.draftedCards.slice(0, 3); // First 3 are team cards
+        const generalCards = this.draftedCards.slice(3); // Rest are general draft
+        
+        // Create a wrapper with proper structure
+        const deckWrapper = document.createElement('div');
+        deckWrapper.className = 'deck-review-wrapper';
+        
+        // Create team cards section
+        if (teamCards.length > 0) {
+            const teamSection = document.createElement('div');
+            teamSection.className = 'deck-section';
+            teamSection.innerHTML = `
+                <h4 class="deck-section-header">
+                    🏈 Your Team Players (${teamCards.length})
+                </h4>
+                <div class="deck-cards-grid" id="teamCardsGrid"></div>
+            `;
+            deckWrapper.appendChild(teamSection);
+            
+            const teamGrid = teamSection.querySelector('#teamCardsGrid');
+            teamCards.forEach((card, index) => {
+                const cardElement = this.createDeckReviewCard(card, `team-${index}`);
+                teamGrid.appendChild(cardElement);
+            });
+        }
+        
+        // Create general draft section
+        if (generalCards.length > 0) {
+            const generalSection = document.createElement('div');
+            generalSection.className = 'deck-section';
+            generalSection.innerHTML = `
+                <h4 class="deck-section-header">
+                    🌟 General Draft Players (${generalCards.length})
+                </h4>
+                <div class="deck-cards-grid" id="generalCardsGrid"></div>
+            `;
+            deckWrapper.appendChild(generalSection);
+            
+            const generalGrid = generalSection.querySelector('#generalCardsGrid');
+            generalCards.forEach((card, index) => {
+                const cardElement = this.createDeckReviewCard(card, `general-${index}`);
+                generalGrid.appendChild(cardElement);
+            });
+        }
+        
+        container.appendChild(deckWrapper);
+    }
+
+    createDeckReviewCard(player, cardId) {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'draft-choice-card deck-review-card';
+        cardElement.dataset.playerId = cardId;
+
+        cardElement.innerHTML = `
+            <div class="choice-card-header">
+                <div class="player-cost">${player.cost}</div>
+                <div class="player-position" style="background-color: ${this.getPositionColor(player.position)}">${player.position}</div>
+                <div class="player-rarity">${player.rarity}</div>
+            </div>
+            
+            <div class="player-image">
+                <div style="color: white; font-weight: bold; font-size: clamp(8px, 2vw, 12px);">
+                    ${player.name}
+                </div>
+            </div>
+            
+            <div class="player-name">${player.name}</div>
+            
+            <div class="team-name" style="background-color: ${this.getTeamColor(player.team)}">
+                ${player.team || 'NFL'}
+            </div>
+            
+            <div class="player-stats">
+                <div class="stat-row">
+                    <span class="stat-label">Rush O:</span>
+                    <span class="stat-value">${player.rushOffense}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Pass O:</span>
+                    <span class="stat-value">${player.passOffense}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Rush D:</span>
+                    <span class="stat-value">${player.rushDefense}</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Pass D:</span>
+                    <span class="stat-value">${player.passDefense}</span>
+                </div>
+            </div>
+        `;
+
+        return cardElement;
     }
 
     getPositionColor(position) {

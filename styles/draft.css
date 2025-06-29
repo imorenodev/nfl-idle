@@ -101,23 +101,30 @@
 /* Team Players Grid */
 .team-players-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 20px;
+    grid-template-columns: repeat(3, 1fr);
+    gap: min(8px, 1.5vw);
     margin-bottom: 30px;
     flex: 1;
+    align-content: start;
+    max-width: 100%;
 }
 
 /* Draft Player Cards */
 .draft-player-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 20px;
+    border-radius: 8px;
+    padding: min(6px, 1vh);
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
     overflow: hidden;
-    border: 3px solid transparent;
+    border: 2px solid transparent;
+    aspect-ratio: 3/4;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
 }
 
 .draft-player-card:hover {
@@ -135,19 +142,19 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    margin-bottom: min(8px, 1vh);
 }
 
 .player-cost,
 .player-rarity {
-    width: 30px;
-    height: 30px;
+    width: clamp(20px, 5vw, 24px);
+    height: clamp(20px, 5vw, 24px);
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
     font-weight: bold;
-    font-size: 14px;
+    font-size: clamp(8px, 2vw, 10px);
 }
 
 .player-cost {
@@ -161,23 +168,24 @@
 }
 
 .player-position {
-    padding: 4px 8px;
+    padding: 2px 6px;
     border-radius: 4px;
     font-weight: bold;
-    font-size: 12px;
+    font-size: clamp(8px, 2vw, 10px);
     color: white;
 }
 
 .player-image {
     width: 100%;
-    height: 120px;
+    flex: 1;
     background: linear-gradient(45deg, #2c3e50, #3498db);
-    border-radius: 8px;
-    margin-bottom: 15px;
+    border-radius: 6px;
+    margin-bottom: min(4px, 0.5vh);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    min-height: 0;
 }
 
 .player-photo {
@@ -188,16 +196,18 @@
 }
 
 .player-name {
-    font-size: 1.2rem;
+    font-size: clamp(8px, 2vw, 10px);
     font-weight: bold;
     text-align: center;
-    margin-bottom: 10px;
+    margin-bottom: min(3px, 0.5vh);
+    line-height: 1.1;
 }
 
 .player-stats {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 1px;
+    font-size: clamp(6px, 1.5vw, 8px);
 }
 
 .stat-row {
@@ -207,13 +217,14 @@
 }
 
 .stat-label {
-    font-size: 0.9rem;
+    font-size: clamp(6px, 1.5vw, 7px);
     color: rgba(255, 255, 255, 0.8);
 }
 
 .stat-value {
     font-weight: bold;
     color: white;
+    font-size: clamp(6px, 1.5vw, 7px);
 }
 
 .selection-overlay {
@@ -252,21 +263,28 @@
 }
 
 .draft-choices {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 20px;
+    /* display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: min(8px, 1.5vw); */
     margin-bottom: 30px;
+    align-content: start;
+    max-width: 100%;
 }
 
 .draft-choice-card {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border-radius: 15px;
-    padding: 20px;
+    border-radius: 8px;
+    padding: min(6px, 1vh);
     color: white;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     position: relative;
-    border: 3px solid transparent;
+    border: 2px solid transparent;
+    aspect-ratio: 3/4;
+    min-height: 0;
+    display: flex;
+    flex-direction: column;
+    max-width: 100%;
 }
 
 .draft-choice-card:hover {
@@ -372,6 +390,17 @@
     align-items: center;
     margin-top: auto;
     padding-top: 20px;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.draft-options {
+    display: none;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+    max-width: 300px;
+    margin: 0 20px;
 }
 
 .draft-button {
@@ -415,6 +444,26 @@
     box-shadow: 0 6px 12px rgba(40, 167, 69, 0.4);
 }
 
+.auto-draft-button {
+    background: linear-gradient(135deg, #f39c12, #e67e22);
+    color: white;
+}
+
+.auto-draft-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(243, 156, 18, 0.4);
+}
+
+.manual-draft-button {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+.manual-draft-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(52, 152, 219, 0.4);
+}
+
 /* Draft Message */
 .draft-message {
     position: fixed;
@@ -455,13 +504,23 @@
     }
     
     .team-players-grid {
-        grid-template-columns: 1fr;
-        gap: 15px;
+        grid-template-columns: repeat(3, 1fr);
+        gap: min(8px, 1.5vw);
     }
     
-    .draft-choices {
-        grid-template-columns: 1fr;
-        gap: 15px;
+    /* .draft-choices {
+        grid-template-columns: repeat(3, 1fr);
+        gap: min(8px, 1.5vw);
+    } */
+    
+    .deck-cards-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: min(6px, 1vw);
+    }
+    
+    .deck-section-header {
+        font-size: clamp(12px, 4vw, 14px);
+        margin: 8px 0;
     }
     
     .deck-summary {
@@ -473,10 +532,82 @@
         gap: 15px;
     }
     
+    .draft-options {
+        max-width: 100%;
+        margin: 0;
+        order: 1;
+    }
+    
     .draft-button {
         width: 100%;
         max-width: 300px;
     }
+}
+
+/* Deck Review Structure */
+.deck-review-wrapper {
+    width: 100%;
+}
+
+.deck-section {
+    margin-bottom: 20px;
+}
+
+.deck-section-header {
+    color: white;
+    margin: 10px 0;
+    text-align: center;
+    border-bottom: 2px solid rgba(255,255,255,0.3);
+    padding-bottom: 8px;
+    font-size: clamp(14px, 3vw, 16px);
+    grid-column: 1 / -1; /* Span all columns */
+}
+
+.deck-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: min(8px, 1.5vw);
+    margin-bottom: 15px;
+    align-content: start;
+    max-width: 100%;
+}
+
+/* Deck Review Cards */
+.deck-review-card {
+    border: 2px solid rgba(76, 175, 80, 0.3);
+    background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+    cursor: default;
+    pointer-events: none;
+    opacity: 0.95;
+}
+
+.deck-review-card:hover {
+    transform: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Scrollable deck review */
+.draft-choices {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.draft-choices::-webkit-scrollbar {
+    width: 8px;
+}
+
+.draft-choices::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 4px;
+}
+
+.draft-choices::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+}
+
+.draft-choices::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
 }
 
 /* Animation for card selection */
