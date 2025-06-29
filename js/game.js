@@ -2,12 +2,13 @@
 import { CombatEngine } from './core/CombatEngine.js';
 import { gameOverManager } from './core/GameOverManager.js';
 import { CardDataProvider } from './data/CardDataProvider.js';
+import { GAME_CONFIG } from './core/GameConstants.js';
 
 export class GameState {
     constructor(draftedDeck = null) {
         this.selectedCards = new Set();
-        this.playerYards = 20;
-        this.enemyYards = 20;
+        this.playerYards = GAME_CONFIG.STARTING_PLAYER_YARDS;
+        this.enemyYards = GAME_CONFIG.STARTING_ENEMY_YARDS;
 
         // Health bar instances
         this.playerYardsBar = null;
@@ -106,8 +107,8 @@ export class GameState {
     restartGame() {
         // Reset all game state
         this.selectedCards = new Set();
-        this.playerYards = 20;
-        this.enemyYards = 20;
+        this.playerYards = GAME_CONFIG.STARTING_PLAYER_YARDS;
+        this.enemyYards = GAME_CONFIG.STARTING_ENEMY_YARDS;
         this.round = 1;
         this.hasDiscardedThisRound = false;
         this.gameLog = [];
@@ -789,6 +790,18 @@ export class GameState {
         // Debug logging for yard tracking
         console.log(`Round ${this.round} complete: Player ${this.playerYards}/100, Enemy ${this.enemyYards}/100`);
         console.log(`Combat result isGameOver: ${combatResult.isGameOver}, Manual check isGameOver: ${gameOverCheck.isGameOver}`);
+        
+        // Extra safety check for the reported bug
+        if (this.enemyYards <= 0) {
+            console.log(`🔍 ENEMY YARDS <= 0 DETECTED: ${this.enemyYards} - This should trigger player safety victory!`);
+            console.log(`🔍 Combat result:`, combatResult);
+            console.log(`🔍 Manual game over check:`, gameOverCheck);
+        }
+        if (this.playerYards <= 0) {
+            console.log(`🔍 PLAYER YARDS <= 0 DETECTED: ${this.playerYards} - This should trigger enemy safety victory!`);
+            console.log(`🔍 Combat result:`, combatResult);
+            console.log(`🔍 Manual game over check:`, gameOverCheck);
+        }
         
         if (combatResult.isGameOver || gameOverCheck.isGameOver) {
             // Use the more complete result (combat result includes more context)
