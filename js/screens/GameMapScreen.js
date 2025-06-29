@@ -181,7 +181,16 @@ export class GameMapScreen {
             const currentIndex = this.battles.findIndex(b => b.id === battleId);
             if (currentIndex < this.battles.length - 1) {
                 this.battles[currentIndex + 1].status = 'available';
+                console.log(`Battle ${battleId} won - unlocked next battle: ${this.battles[currentIndex + 1].id}`);
+            } else {
+                // Player won the final battle (Super Bowl)
+                console.log('🏆 SUPER BOWL CHAMPION! Player completed all battles!');
+                this.showChampionshipCelebration();
             }
+        } else {
+            // Player lost - lock all future battles
+            this.lockAllBattlesAfter(battleId);
+            console.log(`Battle ${battleId} lost - locked all future battles`);
         }
 
         this.updateStats();
@@ -197,6 +206,31 @@ export class GameMapScreen {
         this.container.querySelector('#teamRecord').textContent = `${wins}-${losses}`;
     }
 
+    lockAllBattlesAfter(battleId) {
+        const battleIndex = this.battles.findIndex(b => b.id === battleId);
+        if (battleIndex === -1) return;
+        
+        // Lock all battles after the current one
+        for (let i = battleIndex + 1; i < this.battles.length; i++) {
+            this.battles[i].status = 'locked';
+            this.battles[i].completed = false;
+            this.battles[i].won = undefined;
+        }
+    }
+
+    showChampionshipCelebration() {
+        // Simple championship message - could be enhanced with modal later
+        const seasonProgress = this.container.querySelector('#seasonProgress');
+        if (seasonProgress) {
+            seasonProgress.innerHTML = '🏆 <strong>SUPER BOWL CHAMPIONS!</strong> 🏆';
+            seasonProgress.style.color = '#FFD700';
+            seasonProgress.style.textShadow = '2px 2px 4px rgba(0,0,0,0.5)';
+        }
+        
+        // Could add more celebration effects here
+        console.log('🎉 Championship celebration displayed!');
+    }
+
     resetProgression() {
         // Reset all battles to start over from game 1
         this.currentBattleIndex = 0;
@@ -207,6 +241,14 @@ export class GameMapScreen {
             battle.won = undefined;
             battle.status = index === 0 ? 'available' : 'locked';
         });
+        
+        // Reset championship status
+        const seasonProgress = this.container.querySelector('#seasonProgress');
+        if (seasonProgress) {
+            seasonProgress.innerHTML = 'Regular Season';
+            seasonProgress.style.color = '';
+            seasonProgress.style.textShadow = '';
+        }
         
         // Re-render the battles and update stats
         this.renderBattles();

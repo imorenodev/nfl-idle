@@ -218,11 +218,14 @@ export class GameOverManager {
         await modalManager.hideModal('gameOverModal');
         modalManager.destroyModal('gameOverModal');
         
-        this.resetGameOverState();
+        // Pass the battle result to the restart handler
+        const playerWon = this.gameOverData.winner === 'player';
         
         if (this.onGameRestart) {
-            this.onGameRestart();
+            this.onGameRestart(playerWon);
         }
+        
+        this.resetGameOverState();
         
         messageSystem.showSuccess('New game started!', { duration: 1500 });
     }

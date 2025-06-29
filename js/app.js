@@ -98,8 +98,8 @@ class NFLCardBattleApp {
     setupGameOverCallbacks() {
         // Set up callbacks for game over manager (accessed through GameState)
         if (this.gameState && this.gameState.gameOverManager) {
-            this.gameState.gameOverManager.setOnGameRestart(() => {
-                this.handlePlayAgain();
+            this.gameState.gameOverManager.setOnGameRestart((playerWon) => {
+                this.handlePlayAgain(playerWon);
             });
             
             this.gameState.gameOverManager.setOnGameExit(() => {
@@ -112,17 +112,25 @@ class NFLCardBattleApp {
         }
     }
 
-    handlePlayAgain() {
-        // Reset the current battle to game 1
+    handlePlayAgain(playerWon) {
         const mapScreen = this.screenManager.screens.get(SCREENS.GAME_MAP);
-        if (mapScreen) {
-            // Reset the battle progression - start over from game 1
-            mapScreen.resetProgression();
+        const currentBattle = this.screenManager.getCurrentBattle();
+        
+        if (mapScreen && currentBattle) {
+            if (playerWon) {
+                // Player won - advance to next battle
+                mapScreen.onBattleCompleted(currentBattle.id, true);
+                console.log(`Player won battle ${currentBattle.id} - next battle unlocked`);
+            } else {
+                // Player lost - reset progression back to game 1
+                mapScreen.resetProgression();
+                console.log(`Player lost battle ${currentBattle.id} - progression reset to game 1`);
+            }
         }
         
         // Return to game map
         this.screenManager.showScreen(SCREENS.GAME_MAP);
-        console.log('Player chose to play again - returning to game map with reset progression');
+        console.log('Player chose to play again - returning to game map');
     }
 
     handleReturnToMenu() {
