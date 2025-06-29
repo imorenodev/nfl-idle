@@ -17,8 +17,8 @@ export const GAME_CONFIG = {
     DECK_SIZE: 25,
     CARDS_PER_ROUND: 6,
     MAX_YARDS: 100,
-    STARTING_PLAYER_YARDS: 10,
-    STARTING_ENEMY_YARDS: 0,
+    STARTING_PLAYER_YARDS: 20,
+    STARTING_ENEMY_YARDS: 20,
     MAX_SELECTED_CARDS: 6,
     DISCARDS_PER_ROUND: 1
 };
@@ -60,8 +60,8 @@ export const COMBAT_CALCULATION = {
     // Requires QB to gain offensive yards
     REQUIRES_QB_FOR_OFFENSE: true,
     YARD_BOUNDS: {
-        MIN: 0,
-        MAX: 100
+        MIN: 0,  // Safety occurs at 0 yards or below
+        MAX: 100 // Touchdown occurs at 100 yards or above
     }
 };
 

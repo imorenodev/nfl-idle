@@ -295,13 +295,27 @@ export class CombatEngine {
         const gameOverCheck = this.checkGameOver(newPlayerYards, newEnemyYards);
         if (gameOverCheck.isGameOver) {
             console.log(`🚨 GAME OVER DETECTED BEFORE CLAMPING: ${gameOverCheck.type} - ${gameOverCheck.winner} wins! (Player: ${newPlayerYards}, Enemy: ${newEnemyYards})`);
+            console.log(`🎯 Game Over Details:`, gameOverCheck);
+        } else {
+            console.log(`✅ No game over detected with yards: Player: ${newPlayerYards}, Enemy: ${newEnemyYards}`);
         }
         
-        // Clamp to bounds
+        // Clamp to bounds (but game over should have been detected above)
         const clampedPlayerYards = Math.max(MIN, Math.min(MAX, newPlayerYards));
         const clampedEnemyYards = Math.max(MIN, Math.min(MAX, newEnemyYards));
         
         console.log(`Clamped yards: Player ${clampedPlayerYards}, Enemy ${clampedEnemyYards}`);
+        
+        // Additional safety check - if game is over but wasn't detected, this is a bug
+        if (!gameOverCheck.isGameOver) {
+            const postClampGameOver = this.checkGameOver(clampedPlayerYards, clampedEnemyYards);
+            if (postClampGameOver.isGameOver) {
+                console.error(`🐛 BUG DETECTED: Game over only detected AFTER clamping!`);
+                console.error(`Pre-clamp: Player ${newPlayerYards}, Enemy ${newEnemyYards}`);
+                console.error(`Post-clamp: Player ${clampedPlayerYards}, Enemy ${clampedEnemyYards}`);
+                console.error(`This should not happen - game over should be detected before clamping!`);
+            }
+        }
 
         // Calculate the actual change that occurred (accounting for clamping)
         const actualPlayerChange = clampedPlayerYards - currentPlayerYards;
@@ -354,9 +368,9 @@ export class CombatEngine {
             };
         }
         
-        // Player reaches 0 yards - Player loses by safety
+        // Player reaches 0 yards or below - Player loses by safety
         if (playerYards <= MIN) {
-            console.log('Game Over: Player Safety (Enemy wins)');
+            console.log(`Game Over: Player Safety (Enemy wins) - Player yards: ${playerYards}`);
             return { 
                 isGameOver: true, 
                 winner: 'enemy', 
@@ -365,9 +379,9 @@ export class CombatEngine {
             };
         }
         
-        // Enemy reaches 0 yards - Player wins by safety
+        // Enemy reaches 0 yards or below - Player wins by safety
         if (enemyYards <= MIN) {
-            console.log('Game Over: Enemy Safety (Player wins)');
+            console.log(`Game Over: Enemy Safety (Player wins) - Enemy yards: ${enemyYards}`);
             return { 
                 isGameOver: true, 
                 winner: 'player', 
