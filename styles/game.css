@@ -552,7 +552,8 @@ body {
 .last-round-outcome {
     position: absolute;
     top: 2px;
-    left: 10px;
+    left: 50%;
+    transform: translateX(-50%);
     background: rgba(0, 0, 0, 0.3);
     color: white;
     padding: 4px 6px;
@@ -566,7 +567,7 @@ body {
 
 .last-round-outcome:hover {
     background: rgba(0, 0, 0, 0.9);
-    transform: scale(1.05);
+    transform: translateX(-50%) scale(1.05);
 }
 
 .game-log-modal {

@@ -120,7 +120,7 @@ class HealthBar {
             this.dead = true;
             this.bar.classList.add('dead');
             this.lblValue.classList.add('dead');
-            this.lblValue.innerHTML = 'Dead';
+            this.lblValue.innerHTML = 'Defeated';
         }
         
         // Color calculation based on health percentage
