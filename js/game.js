@@ -1120,6 +1120,20 @@ export class GameState {
                 this.hideGameLogModal();
             }
         });
+
+        document.getElementById('cardsRemaining').addEventListener('click', () => {
+            this.showDrawPileModal();
+        });
+
+        document.getElementById('closeDrawPileModal').addEventListener('click', () => {
+            this.hideDrawPileModal();
+        });
+
+        document.getElementById('drawPileModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('drawPileModal')) {
+                this.hideDrawPileModal();
+            }
+        });
     }
 
     updateStatsTable(playerStats, enemyStats) {
@@ -1182,6 +1196,85 @@ export class GameState {
         this.highlightDefensiveCards(this.fieldCards.player, false);
         this.highlightOffensiveCards(this.fieldCards.enemy, false);
         this.highlightDefensiveCards(this.fieldCards.enemy, false);
+    }
+
+    showDrawPileModal() {
+        const modal = document.getElementById('drawPileModal');
+        const cardsContainer = document.getElementById('drawPileCards');
+        
+        // Clear previous content
+        cardsContainer.innerHTML = '';
+        
+        // Shuffle the draw pile for display (don't modify the actual draw pile)
+        const shuffledCards = [...this.playerDrawPile].sort(() => Math.random() - 0.5);
+        
+        // Create card elements for each card in draw pile
+        shuffledCards.forEach(card => {
+            const cardElement = this.createDrawPileCard(card);
+            cardsContainer.appendChild(cardElement);
+        });
+        
+        // Show modal
+        modal.style.display = 'flex';
+    }
+
+    hideDrawPileModal() {
+        const modal = document.getElementById('drawPileModal');
+        modal.style.display = 'none';
+    }
+
+    createDrawPileCard(player) {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'draw-pile-card';
+
+        // Get position color for styling (reuse existing method if available)
+        const positionColor = this.getPositionColor ? this.getPositionColor(player.position) : '#888';
+
+        cardElement.innerHTML = `
+            <div class="player-card-header">
+                <div class="player-cost">${player.cost}</div>
+                <div class="player-position" style="background-color: ${positionColor}">${player.position}</div>
+                <div class="player-rarity">${player.rarity}</div>
+            </div>
+            
+            <div class="player-image">
+                <img src="./assets/images/${player.position.toLowerCase()}.png" 
+                     alt="${player.name} (${player.position})" 
+                     class="player-photo"
+                     loading="lazy"
+                     onerror="this.src='./assets/images/mahomes-profile.png'; this.onerror=null;">
+            </div>
+            
+            <div class="player-name">${player.name}</div>
+            
+            <div class="player-stats">
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Rush:</span>
+                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                </div>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Pass:</span>
+                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
+                </div>
+            </div>
+        `;
+
+        return cardElement;
+    }
+
+    getPositionColor(position) {
+        const positionColors = {
+            'QB': '#FF6B6B',  // Red
+            'RB': '#4ECDC4',  // Teal 
+            'WR': '#45B7D1',  // Blue
+            'TE': '#96CEB4',  // Green
+            'DE': '#FECA57',  // Yellow
+            'DT': '#FF9FF3',  // Pink
+            'LB': '#F38BA8',  // Light Pink
+            'S': '#A8DADC',   // Light Blue
+            'CB': '#457B9D'   // Dark Blue
+        };
+        return positionColors[position] || '#888';
     }
 }
 

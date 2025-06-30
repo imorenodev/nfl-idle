@@ -39,6 +39,21 @@
                 </div>
             </div>
 
+            <!-- Modal for draw pile -->
+            <div class="draw-pile-modal" id="drawPileModal" style="display: none;">
+                <div class="modal-content draw-pile-content">
+                    <div class="modal-header">
+                        <h2>Your Draw Pile</h2>
+                        <span class="close-modal" id="closeDrawPileModal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="draw-pile-cards" id="drawPileCards">
+                            <!-- Draw pile cards will be rendered here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="field-zone enemy-zone" id="enemyZone">
                 <!-- Enemy cards will be placed here -->
             </div>
@@ -53,7 +68,7 @@
         <div class="hand-section">
             <div class="hand-controls">
                 <button class="discard-btn" id="discardBtn">Sub Out</button>
-                <div class="cards-remaining">Available 9/15</div>
+                <div class="cards-remaining" id="cardsRemaining" style="cursor: pointer;" title="Click to view draw pile">Available 9/15</div>
                 <button class="play-btn" id="playBtn">Snap 🏈</button>
             </div>
             
