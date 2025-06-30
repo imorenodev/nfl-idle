@@ -16,6 +16,37 @@
 </head>
 <body>
     <div class="game-container">
+        <!-- In-Game Menu Button -->
+        <button class="game-menu-button" id="gameMenuButton" title="Game Menu">☰</button>
+        
+        <!-- In-Game Menu Modal -->
+        <div class="game-menu-modal" id="gameMenuModal" style="display: none;">
+            <div class="modal-content game-menu-content">
+                <div class="modal-header">
+                    <h3>Game Menu</h3>
+                    <span class="close-modal" id="closeGameMenuModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="game-menu-options">
+                        <button class="game-menu-option forfeit-option" id="forfeitMatch">
+                            <span class="menu-icon">🏳️</span>
+                            <div class="menu-text">
+                                <div class="menu-title">Forfeit Match</div>
+                                <div class="menu-subtitle">Return to game map</div>
+                            </div>
+                        </button>
+                        <button class="game-menu-option quit-option" id="quitToMenu">
+                            <span class="menu-icon">🏠</span>
+                            <div class="menu-text">
+                                <div class="menu-title">Quit to Main Menu</div>
+                                <div class="menu-subtitle">Return to title screen</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="field-section">
             <div class="field-lines"></div>
 
@@ -25,7 +56,6 @@
             <div class="last-round-outcome" id="lastRoundOutcome" style="display: none;">
                 <div class="outcome-text">Click to view game log</div>📝
             </div>
-            <div id="stats-display" class="stats-display" style="display: none;"></div>
 
             <!-- Modal for game log -->
             <div class="game-log-modal" id="gameLogModal" style="display: none;">
@@ -36,6 +66,21 @@
                     </div>
                     <div class="modal-body" id="gameLogContent">
                         <!-- Game log entries will be added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Modal for draw pile -->
+            <div class="draw-pile-modal" id="drawPileModal" style="display: none;">
+                <div class="modal-content draw-pile-content">
+                    <div class="modal-header">
+                        <h2>Your Draw Pile</h2>
+                        <span class="close-modal" id="closeDrawPileModal">&times;</span>
+                    </div>
+                    <div class="modal-body">
+                        <div class="draw-pile-cards" id="drawPileCards">
+                            <!-- Draw pile cards will be rendered here -->
+                        </div>
                     </div>
                 </div>
             </div>
@@ -54,8 +99,40 @@
         <div class="hand-section">
             <div class="hand-controls">
                 <button class="discard-btn" id="discardBtn">Sub Out</button>
-                <div class="cards-remaining">Available 9/15</div>
+                <div class="cards-remaining" id="cardsRemaining" style="cursor: pointer;" title="Click to view draw pile">Available 9/15</div>
                 <button class="play-btn" id="playBtn">Snap 🏈</button>
+            </div>
+            
+            <!-- Stats Display Table -->
+            <div id="stats-display" class="stats-display-table" style="display: none;">
+                <div class="stats-table-header">Drive Stats</div>
+                <div class="stats-table">
+                    <div class="stats-table-row stats-header-row">
+                        <div class="stat-category"></div>
+                        <div class="stat-player-header">Your Team</div>
+                        <div class="stat-enemy-header">Enemy Team</div>
+                    </div>
+                    <div class="stats-table-row">
+                        <div class="stat-category">Rush OFF</div>
+                        <div class="stat-player-value" id="playerRushOff">-</div>
+                        <div class="stat-enemy-value" id="enemyRushOff">-</div>
+                    </div>
+                    <div class="stats-table-row">
+                        <div class="stat-category">Pass OFF</div>
+                        <div class="stat-player-value" id="playerPassOff">-</div>
+                        <div class="stat-enemy-value" id="enemyPassOff">-</div>
+                    </div>
+                    <div class="stats-table-row">
+                        <div class="stat-category">Rush DEF</div>
+                        <div class="stat-player-value" id="playerRushDef">-</div>
+                        <div class="stat-enemy-value" id="enemyRushDef">-</div>
+                    </div>
+                    <div class="stats-table-row">
+                        <div class="stat-category">Pass DEF</div>
+                        <div class="stat-player-value" id="playerPassDef">-</div>
+                        <div class="stat-enemy-value" id="enemyPassDef">-</div>
+                    </div>
+                </div>
             </div>
             
             <div class="hand-cards" id="handCards">

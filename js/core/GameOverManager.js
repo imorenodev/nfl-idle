@@ -236,6 +236,9 @@ export class GameOverManager {
         await modalManager.hideModal('gameOverModal');
         modalManager.destroyModal('gameOverModal');
         
+        // Clear and hide stats display
+        this.clearStatsDisplay();
+        
         // Pass the battle result to the restart handler
         const playerWon = this.gameOverData.winner === 'player';
         
@@ -263,6 +266,9 @@ export class GameOverManager {
     async exitToMainMenu() {
         await modalManager.hideModal('gameOverModal');
         modalManager.destroyModal('gameOverModal');
+        
+        // Clear and hide stats display
+        this.clearStatsDisplay();
         
         this.resetGameOverState();
         
@@ -328,6 +334,31 @@ export class GameOverManager {
         };
         
         this.handleGameOver(gameOverResult, gameState);
+    }
+
+    /**
+     * Clear and hide the stats display
+     */
+    clearStatsDisplay() {
+        const statsDisplay = document.getElementById('stats-display');
+        if (statsDisplay) {
+            // Clear all highlighted stats
+            const statElements = [
+                'playerRushOff', 'enemyRushOff', 'playerPassOff', 'enemyPassOff',
+                'playerRushDef', 'enemyRushDef', 'playerPassDef', 'enemyPassDef'
+            ];
+            
+            statElements.forEach(id => {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.classList.remove('highlighted');
+                    element.textContent = '-';
+                }
+            });
+            
+            // Hide the stats display
+            statsDisplay.style.display = 'none';
+        }
     }
 }
 

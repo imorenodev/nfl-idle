@@ -713,34 +713,32 @@ export class GameState {
     async endRound(playerPower) {
         const statsDisplay = document.getElementById('stats-display');
 
-        // 1. Show Enemy Defense
+        // Calculate stats for both teams
         const enemyStats = CombatEngine.calculateTeamStats(this.fieldCards.enemy);
-        statsDisplay.innerHTML = `Enemy Defense<br>Rush: ${enemyStats.rushDefense} | Pass: ${enemyStats.passDefense}`;
-        statsDisplay.style.display = 'block';
-        this.highlightDefensiveCards(this.fieldCards.enemy, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightDefensiveCards(this.fieldCards.enemy, false);
-
-        // 2. Show Player Offense
         const playerStats = CombatEngine.calculateTeamStats(this.fieldCards.player);
-        statsDisplay.innerHTML = `Your Offense<br>Rush: ${playerStats.rushOffense} | Pass: ${playerStats.passOffense}`;
-        this.highlightOffensiveCards(this.fieldCards.player, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightOffensiveCards(this.fieldCards.player, false);
 
-        // 3. Show Player Defense
-        statsDisplay.innerHTML = `Your Defense<br>Rush: ${playerStats.rushDefense} | Pass: ${playerStats.passDefense}`;
-        this.highlightDefensiveCards(this.fieldCards.player, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightDefensiveCards(this.fieldCards.player, false);
+        // Update the stats table with all values
+        this.updateStatsTable(playerStats, enemyStats);
+        statsDisplay.style.display = 'block';
 
-        // 4. Show Enemy Offense
-        statsDisplay.innerHTML = `Enemy Offense<br>Rush: ${enemyStats.rushOffense} | Pass: ${enemyStats.passOffense}`;
-        this.highlightOffensiveCards(this.fieldCards.enemy, true);
+        // 1. Highlight Enemy Defense
+        this.highlightStatsAndCards('defense', 'enemy', this.fieldCards.enemy);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightOffensiveCards(this.fieldCards.enemy, false);
 
-        statsDisplay.style.display = 'none';
+        // 2. Highlight Player Offense
+        this.highlightStatsAndCards('offense', 'player', this.fieldCards.player);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 3. Highlight Player Defense
+        this.highlightStatsAndCards('defense', 'player', this.fieldCards.player);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 4. Highlight Enemy Offense
+        this.highlightStatsAndCards('offense', 'enemy', this.fieldCards.enemy);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Clear all highlights and keep table visible during combat
+        this.clearAllHighlights();
 
         // Use the new CombatEngine for all combat calculations
         const combatResult = CombatEngine.processCombatRound(
@@ -816,6 +814,9 @@ export class GameState {
         } else {
             // Continue game - start new round
             setTimeout(() => {
+                // Hide stats display for next round
+                document.getElementById('stats-display').style.display = 'none';
+                
                 this.clearField();
                 
                 this.hasDiscardedThisRound = false;
@@ -1119,6 +1120,235 @@ export class GameState {
                 this.hideGameLogModal();
             }
         });
+
+        document.getElementById('cardsRemaining').addEventListener('click', () => {
+            this.showDrawPileModal();
+        });
+
+        document.getElementById('closeDrawPileModal').addEventListener('click', () => {
+            this.hideDrawPileModal();
+        });
+
+        document.getElementById('drawPileModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('drawPileModal')) {
+                this.hideDrawPileModal();
+            }
+        });
+
+        document.getElementById('gameMenuButton').addEventListener('click', () => {
+            this.showGameMenu();
+        });
+
+        document.getElementById('closeGameMenuModal').addEventListener('click', () => {
+            this.hideGameMenu();
+        });
+
+        document.getElementById('gameMenuModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('gameMenuModal')) {
+                this.hideGameMenu();
+            }
+        });
+
+        document.getElementById('forfeitMatch').addEventListener('click', () => {
+            this.forfeitMatch();
+        });
+
+        document.getElementById('quitToMenu').addEventListener('click', () => {
+            this.quitToMainMenu();
+        });
+    }
+
+    updateStatsTable(playerStats, enemyStats) {
+        // Update all stat values in the table
+        document.getElementById('playerRushOff').textContent = playerStats.rushOffense;
+        document.getElementById('enemyRushOff').textContent = enemyStats.rushOffense;
+        document.getElementById('playerPassOff').textContent = playerStats.passOffense;
+        document.getElementById('enemyPassOff').textContent = enemyStats.passOffense;
+        document.getElementById('playerRushDef').textContent = playerStats.rushDefense;
+        document.getElementById('enemyRushDef').textContent = enemyStats.rushDefense;
+        document.getElementById('playerPassDef').textContent = playerStats.passDefense;
+        document.getElementById('enemyPassDef').textContent = enemyStats.passDefense;
+    }
+
+    highlightStatsAndCards(statType, team, cards) {
+        // Clear previous highlights
+        this.clearAllHighlights();
+
+        if (statType === 'offense') {
+            // Highlight offensive stats
+            if (team === 'player') {
+                document.getElementById('playerRushOff').classList.add('highlighted');
+                document.getElementById('playerPassOff').classList.add('highlighted');
+                this.highlightOffensiveCards(cards, true);
+            } else {
+                document.getElementById('enemyRushOff').classList.add('highlighted');
+                document.getElementById('enemyPassOff').classList.add('highlighted');
+                this.highlightOffensiveCards(cards, true);
+            }
+        } else {
+            // Highlight defensive stats
+            if (team === 'player') {
+                document.getElementById('playerRushDef').classList.add('highlighted');
+                document.getElementById('playerPassDef').classList.add('highlighted');
+                this.highlightDefensiveCards(cards, true);
+            } else {
+                document.getElementById('enemyRushDef').classList.add('highlighted');
+                document.getElementById('enemyPassDef').classList.add('highlighted');
+                this.highlightDefensiveCards(cards, true);
+            }
+        }
+    }
+
+    clearAllHighlights() {
+        // Clear stat highlights
+        const statElements = [
+            'playerRushOff', 'enemyRushOff', 'playerPassOff', 'enemyPassOff',
+            'playerRushDef', 'enemyRushDef', 'playerPassDef', 'enemyPassDef'
+        ];
+        
+        statElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('highlighted');
+            }
+        });
+
+        // Clear card highlights
+        this.highlightOffensiveCards(this.fieldCards.player, false);
+        this.highlightDefensiveCards(this.fieldCards.player, false);
+        this.highlightOffensiveCards(this.fieldCards.enemy, false);
+        this.highlightDefensiveCards(this.fieldCards.enemy, false);
+    }
+
+    showDrawPileModal() {
+        const modal = document.getElementById('drawPileModal');
+        const cardsContainer = document.getElementById('drawPileCards');
+        
+        // Clear previous content
+        cardsContainer.innerHTML = '';
+        
+        // Shuffle the draw pile for display (don't modify the actual draw pile)
+        const shuffledCards = [...this.playerDrawPile].sort(() => Math.random() - 0.5);
+        
+        // Create card elements for each card in draw pile
+        shuffledCards.forEach(card => {
+            const cardElement = this.createDrawPileCard(card);
+            cardsContainer.appendChild(cardElement);
+        });
+        
+        // Show modal
+        modal.style.display = 'flex';
+    }
+
+    hideDrawPileModal() {
+        const modal = document.getElementById('drawPileModal');
+        modal.style.display = 'none';
+    }
+
+    createDrawPileCard(player) {
+        const cardElement = document.createElement('div');
+        cardElement.className = 'draw-pile-card';
+
+        // Get position color for styling (reuse existing method if available)
+        const positionColor = this.getPositionColor ? this.getPositionColor(player.position) : '#888';
+
+        cardElement.innerHTML = `
+            <div class="player-card-header">
+                <div class="player-cost">${player.cost}</div>
+                <div class="player-position" style="background-color: ${positionColor}">${player.position}</div>
+                <div class="player-rarity">${player.rarity}</div>
+            </div>
+            
+            <div class="player-image">
+                <img src="./assets/images/${player.position.toLowerCase()}.png" 
+                     alt="${player.name} (${player.position})" 
+                     class="player-photo"
+                     loading="lazy"
+                     onerror="this.src='./assets/images/mahomes-profile.png'; this.onerror=null;">
+            </div>
+            
+            <div class="player-name">${player.name}</div>
+            
+            <div class="player-stats">
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Rush:</span>
+                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                </div>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Pass:</span>
+                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
+                </div>
+            </div>
+        `;
+
+        return cardElement;
+    }
+
+    getPositionColor(position) {
+        const positionColors = {
+            'QB': '#FF6B6B',  // Red
+            'RB': '#4ECDC4',  // Teal 
+            'WR': '#45B7D1',  // Blue
+            'TE': '#96CEB4',  // Green
+            'DE': '#FECA57',  // Yellow
+            'DT': '#FF9FF3',  // Pink
+            'LB': '#F38BA8',  // Light Pink
+            'S': '#A8DADC',   // Light Blue
+            'CB': '#457B9D'   // Dark Blue
+        };
+        return positionColors[position] || '#888';
+    }
+
+    showGameMenu() {
+        const modal = document.getElementById('gameMenuModal');
+        modal.style.display = 'flex';
+    }
+
+    hideGameMenu() {
+        const modal = document.getElementById('gameMenuModal');
+        modal.style.display = 'none';
+    }
+
+    forfeitMatch() {
+        // Hide the menu first
+        this.hideGameMenu();
+        
+        // Clear and hide stats display
+        const statsDisplay = document.getElementById('stats-display');
+        if (statsDisplay) {
+            statsDisplay.style.display = 'none';
+        }
+        
+        // Reset game over state and use GameOverManager to handle forfeit
+        this.gameOverManager.resetGameOverState();
+        
+        // Call the game over manager's restart callback (same as losing and clicking restart)
+        if (this.gameOverManager.onGameRestart) {
+            this.gameOverManager.onGameRestart(false); // false = player lost
+        }
+        
+        console.log('Player forfeited match - returning to game map');
+    }
+
+    quitToMainMenu() {
+        // Hide the menu first
+        this.hideGameMenu();
+        
+        // Clear and hide stats display
+        const statsDisplay = document.getElementById('stats-display');
+        if (statsDisplay) {
+            statsDisplay.style.display = 'none';
+        }
+        
+        // Reset game over state and use GameOverManager to handle quit
+        this.gameOverManager.resetGameOverState();
+        
+        // Call the game over manager's exit callback (same as clicking main menu)
+        if (this.gameOverManager.onGameExit) {
+            this.gameOverManager.onGameExit();
+        }
+        
+        console.log('Player quit to main menu');
     }
 }
 
