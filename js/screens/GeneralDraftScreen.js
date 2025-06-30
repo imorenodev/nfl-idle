@@ -167,13 +167,13 @@ export class GeneralDraftScreen {
             <div class="player-name">${player.name}</div>
             
             <div class="player-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Rush:</span>
-                    <span class="stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Rush:</span>
+                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
                 </div>
-                <div class="stat-row">
-                    <span class="stat-label">Pass:</span>
-                    <span class="stat-value">${player.passOffense}/${player.passDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Pass:</span>
+                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
                 </div>
             </div>
             
@@ -359,7 +359,7 @@ export class GeneralDraftScreen {
 
     renderDraftedDeck(container) {
         container.innerHTML = '';
-        container.style.maxHeight = '60vh';
+        container.style.maxHeight = '40vh';
         container.style.overflowY = 'auto';
         
         // Group cards by source (team vs general draft)
@@ -434,13 +434,13 @@ export class GeneralDraftScreen {
             <div class="player-name">${player.name}</div>
             
             <div class="player-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Rush:</span>
-                    <span class="stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Rush:</span>
+                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
                 </div>
-                <div class="stat-row">
-                    <span class="stat-label">Pass:</span>
-                    <span class="stat-value">${player.passOffense}/${player.passDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Pass:</span>
+                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
                 </div>
             </div>
         `;

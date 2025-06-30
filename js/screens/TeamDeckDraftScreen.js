@@ -128,13 +128,13 @@ export class TeamDeckDraftScreen {
             <div class="player-name">${player.name}</div>
             
             <div class="player-stats">
-                <div class="stat-row">
-                    <span class="stat-label">Rush:</span>
-                    <span class="stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Rush:</span>
+                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
                 </div>
-                <div class="stat-row">
-                    <span class="stat-label">Pass:</span>
-                    <span class="stat-value">${player.passOffense}/${player.passDefense}</span>
+                <div class="player-stat-row">
+                    <span class="player-stat-label">Pass:</span>
+                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
                 </div>
             </div>
             
@@ -142,6 +142,12 @@ export class TeamDeckDraftScreen {
                 <div class="selection-check">✓</div>
             </div>
         `;
+
+        // Check if this player should be visually selected based on current selectedCards array
+        const isSelected = this.selectedCards.some(card => card.id === player.id);
+        if (isSelected) {
+            cardElement.classList.add('selected');
+        }
 
         cardElement.addEventListener('click', () => {
             this.togglePlayerSelection(player, cardElement);
@@ -246,7 +252,22 @@ export class TeamDeckDraftScreen {
 
     show() {
         if (this.container) {
+            // Clear any previous selection state to ensure clean slate
+            this.selectedCards = [];
+            this.updateProgress();
+            
+            // Re-render team players to sync visual state with cleared selection
+            if (this.selectedTeam && this.teamPlayers.length > 0) {
+                this.renderTeamPlayers();
+            }
+            
+            // Ensure consistent CSS state by resetting animation classes
+            this.container.classList.remove('screen-enter');
             this.container.style.display = 'flex';
+            
+            // Force reflow before adding animation class
+            this.container.offsetHeight;
+            
             setTimeout(() => {
                 this.container.classList.add('screen-enter');
             }, 50);
@@ -257,6 +278,10 @@ export class TeamDeckDraftScreen {
         if (this.container) {
             this.container.style.display = 'none';
             this.container.classList.remove('screen-enter');
+            
+            // Clear any lingering selection state on hide
+            this.selectedCards = [];
+            this.updateProgress();
         }
     }
 

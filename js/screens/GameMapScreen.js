@@ -135,7 +135,7 @@ export class GameMapScreen {
     }
 
     renderBattles() {
-        console.log('Rendering battles:', this.battles.length);
+        console.log(`🎨 renderBattles called - rendering ${this.battles.length} battles`);
         const container = this.container.querySelector('#battlesContainer');
         container.innerHTML = '';
 
@@ -143,6 +143,9 @@ export class GameMapScreen {
             const battleNode = document.createElement('div');
             battleNode.className = `battle-node ${battle.status} ${battle.type}`;
             battleNode.dataset.battleId = battle.id;
+
+            const statusIcon = battle.completed ? '✓' : (battle.status === 'available' ? '🏈' : '🔒');
+            console.log(`🎨 Battle ${battle.id} (${index + 1}): status=${battle.status}, completed=${battle.completed}, icon=${statusIcon}`);
 
             battleNode.innerHTML = `
                 <div class="battle-number">${index + 1}</div>
@@ -153,19 +156,23 @@ export class GameMapScreen {
                     <div class="enemy-name">${battle.team.name}</div>
                 </div>
                 <div class="battle-status">
-                    ${battle.completed ? '✓' : (battle.status === 'available' ? '🏈' : '🔒')}
+                    ${statusIcon}
                 </div>
                 ${battle.title ? `<div class="battle-title">${battle.title}</div>` : ''}
             `;
 
             if (battle.status === 'available') {
+                console.log(`🎨 Adding click handler for available battle ${battle.id}`);
                 battleNode.addEventListener('click', () => {
                     this.startBattle(battle);
                 });
+            } else {
+                console.log(`🎨 Battle ${battle.id} not clickable - status: ${battle.status}`);
             }
 
             container.appendChild(battleNode);
         });
+        console.log(`🎨 renderBattles completed`);
     }
 
     startBattle(battle) {
@@ -175,18 +182,31 @@ export class GameMapScreen {
     }
 
     onBattleCompleted(battleId, won) {
+        console.log(`🎯 onBattleCompleted called with battleId: ${battleId}, won: ${won}`);
+        console.log(`🎯 Current battles state:`, this.battles.map(b => ({ id: b.id, status: b.status, completed: b.completed })));
+        
         const battle = this.battles.find(b => b.id === battleId);
-        if (!battle) return;
+        if (!battle) {
+            console.error(`🚨 Battle ${battleId} not found in battles array!`);
+            console.log(`🚨 Available battles:`, this.battles.map(b => b.id));
+            return;
+        }
 
+        console.log(`🎯 Found battle:`, battle);
         battle.completed = true;
         battle.won = won;
 
         if (won) {
             // Unlock next battle
             const currentIndex = this.battles.findIndex(b => b.id === battleId);
+            console.log(`🎯 Current battle index: ${currentIndex}, total battles: ${this.battles.length}`);
+            
             if (currentIndex < this.battles.length - 1) {
+                const nextBattle = this.battles[currentIndex + 1];
+                console.log(`🎯 Unlocking next battle:`, nextBattle);
                 this.battles[currentIndex + 1].status = 'available';
-                console.log(`Battle ${battleId} won - unlocked next battle: ${this.battles[currentIndex + 1].id}`);
+                console.log(`✅ Battle ${battleId} won - unlocked next battle: ${this.battles[currentIndex + 1].id}`);
+                console.log(`🎯 Next battle status after unlock:`, this.battles[currentIndex + 1].status);
             } else {
                 // Player won the final battle (Super Bowl)
                 console.log('🏆 SUPER BOWL CHAMPION! Player completed all battles!');
@@ -195,11 +215,13 @@ export class GameMapScreen {
         } else {
             // Player lost - lock all future battles
             this.lockAllBattlesAfter(battleId);
-            console.log(`Battle ${battleId} lost - locked all future battles`);
+            console.log(`❌ Battle ${battleId} lost - locked all future battles`);
         }
 
+        console.log(`🎯 Final battles state before render:`, this.battles.map(b => ({ id: b.id, status: b.status, completed: b.completed })));
         this.updateStats();
         this.renderBattles();
+        console.log(`🎯 onBattleCompleted completed for ${battleId}`);
     }
 
     updateStats() {
@@ -264,6 +286,8 @@ export class GameMapScreen {
 
     show() {
         if (this.container) {
+            console.log(`🖥️ GameMapScreen.show() called`);
+            console.log(`🖥️ Current battles status:`, this.battles.map(b => ({ id: b.id, status: b.status, completed: b.completed })));
             this.container.style.display = 'flex';
             setTimeout(() => {
                 this.container.classList.add('screen-enter');
