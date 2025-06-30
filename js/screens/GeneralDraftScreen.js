@@ -168,12 +168,24 @@ export class GeneralDraftScreen {
             
             <div class="player-stats">
                 <div class="player-stat-row">
-                    <span class="player-stat-label">Rush:</span>
-                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Rushing Offense:</span>
+                        <span class="player-stat-value">${player.rushOffense}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Rushing Defense:</span>
+                        <span class="player-stat-value">${player.rushDefense}</span>
+                    </div>
                 </div>
                 <div class="player-stat-row">
-                    <span class="player-stat-label">Pass:</span>
-                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Passing Offense:</span>
+                        <span class="player-stat-value">${player.passOffense}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Passing Defense:</span>
+                        <span class="player-stat-value">${player.passDefense}</span>
+                    </div>
                 </div>
             </div>
             
@@ -435,12 +447,24 @@ export class GeneralDraftScreen {
             
             <div class="player-stats">
                 <div class="player-stat-row">
-                    <span class="player-stat-label">Rush:</span>
-                    <span class="player-stat-value">${player.rushOffense}/${player.rushDefense}</span>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Rushing Offense:</span>
+                        <span class="player-stat-value">${player.rushOffense}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Rushing Defense:</span>
+                        <span class="player-stat-value">${player.rushDefense}</span>
+                    </div>
                 </div>
                 <div class="player-stat-row">
-                    <span class="player-stat-label">Pass:</span>
-                    <span class="player-stat-value">${player.passOffense}/${player.passDefense}</span>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Passing Offense:</span>
+                        <span class="player-stat-value">${player.passOffense}</span>
+                    </div>
+                    <div class="player-stat-item">
+                        <span class="player-stat-label">Passing Defense:</span>
+                        <span class="player-stat-value">${player.passDefense}</span>
+                    </div>
                 </div>
             </div>
         `;
