@@ -47,7 +47,7 @@ export const NFL_TEAM_ROSTERS = {
     NYJ: {
         name: "New York Jets",
         players: {
-            QB: { name: "AARON RODGERS", cost: 7, rarity: 5, rushOffense: 4, rushDefense: 1, passOffense: 9, passDefense: 1 },
+            QB: { name: "AARON RODGERS", cost: 7, rarity: 5, rushOffense: 40000, rushDefense: 1, passOffense: 90000, passDefense: 1 },
             WR: { name: "GARRETT WILSON", cost: 5, rarity: 4, rushOffense: 1, rushDefense: 1, passOffense: 7, passDefense: 1 },
             RB: { name: "BREECE HALL", cost: 5, rarity: 4, rushOffense: 8, rushDefense: 1, passOffense: 6, passDefense: 1 },
             TE: { name: "TYLER CONKLIN", cost: 3, rarity: 2, rushOffense: 1, rushDefense: 1, passOffense: 5, passDefense: 1 },

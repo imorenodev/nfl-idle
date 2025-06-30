@@ -220,8 +220,13 @@ class NFLCardBattleApp {
             const gameMapScreen = this.screenManager.screens.get(SCREENS.GAME_MAP);
             
             if (playerTeam && gameMapScreen) {
-                gameMapScreen.setPlayerTeam(playerTeam);
-                console.log(`Game map initialized for team: ${playerTeam.name}`);
+                // Only initialize if the team hasn't been set yet or if it's a different team
+                if (!gameMapScreen.playerTeam || gameMapScreen.playerTeam.id !== playerTeam.id) {
+                    gameMapScreen.setPlayerTeam(playerTeam);
+                    console.log(`Game map initialized for team: ${playerTeam.name}`);
+                } else {
+                    console.log(`Game map already initialized for team: ${playerTeam.name}, preserving progress`);
+                }
             } else {
                 console.warn('Missing player team data or game map screen for initialization');
             }
