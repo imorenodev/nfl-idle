@@ -16,6 +16,37 @@
 </head>
 <body>
     <div class="game-container">
+        <!-- In-Game Menu Button -->
+        <button class="game-menu-button" id="gameMenuButton" title="Game Menu">☰</button>
+        
+        <!-- In-Game Menu Modal -->
+        <div class="game-menu-modal" id="gameMenuModal" style="display: none;">
+            <div class="modal-content game-menu-content">
+                <div class="modal-header">
+                    <h3>Game Menu</h3>
+                    <span class="close-modal" id="closeGameMenuModal">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <div class="game-menu-options">
+                        <button class="game-menu-option forfeit-option" id="forfeitMatch">
+                            <span class="menu-icon">🏳️</span>
+                            <div class="menu-text">
+                                <div class="menu-title">Forfeit Match</div>
+                                <div class="menu-subtitle">Return to game map</div>
+                            </div>
+                        </button>
+                        <button class="game-menu-option quit-option" id="quitToMenu">
+                            <span class="menu-icon">🏠</span>
+                            <div class="menu-text">
+                                <div class="menu-title">Quit to Main Menu</div>
+                                <div class="menu-subtitle">Return to title screen</div>
+                            </div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <div class="field-section">
             <div class="field-lines"></div>
 

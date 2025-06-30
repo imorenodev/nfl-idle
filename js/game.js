@@ -1134,6 +1134,28 @@ export class GameState {
                 this.hideDrawPileModal();
             }
         });
+
+        document.getElementById('gameMenuButton').addEventListener('click', () => {
+            this.showGameMenu();
+        });
+
+        document.getElementById('closeGameMenuModal').addEventListener('click', () => {
+            this.hideGameMenu();
+        });
+
+        document.getElementById('gameMenuModal').addEventListener('click', (e) => {
+            if (e.target === document.getElementById('gameMenuModal')) {
+                this.hideGameMenu();
+            }
+        });
+
+        document.getElementById('forfeitMatch').addEventListener('click', () => {
+            this.forfeitMatch();
+        });
+
+        document.getElementById('quitToMenu').addEventListener('click', () => {
+            this.quitToMainMenu();
+        });
     }
 
     updateStatsTable(playerStats, enemyStats) {
@@ -1275,6 +1297,58 @@ export class GameState {
             'CB': '#457B9D'   // Dark Blue
         };
         return positionColors[position] || '#888';
+    }
+
+    showGameMenu() {
+        const modal = document.getElementById('gameMenuModal');
+        modal.style.display = 'flex';
+    }
+
+    hideGameMenu() {
+        const modal = document.getElementById('gameMenuModal');
+        modal.style.display = 'none';
+    }
+
+    forfeitMatch() {
+        // Hide the menu first
+        this.hideGameMenu();
+        
+        // Clear and hide stats display
+        const statsDisplay = document.getElementById('stats-display');
+        if (statsDisplay) {
+            statsDisplay.style.display = 'none';
+        }
+        
+        // Reset game over state and use GameOverManager to handle forfeit
+        this.gameOverManager.resetGameOverState();
+        
+        // Call the game over manager's restart callback (same as losing and clicking restart)
+        if (this.gameOverManager.onGameRestart) {
+            this.gameOverManager.onGameRestart(false); // false = player lost
+        }
+        
+        console.log('Player forfeited match - returning to game map');
+    }
+
+    quitToMainMenu() {
+        // Hide the menu first
+        this.hideGameMenu();
+        
+        // Clear and hide stats display
+        const statsDisplay = document.getElementById('stats-display');
+        if (statsDisplay) {
+            statsDisplay.style.display = 'none';
+        }
+        
+        // Reset game over state and use GameOverManager to handle quit
+        this.gameOverManager.resetGameOverState();
+        
+        // Call the game over manager's exit callback (same as clicking main menu)
+        if (this.gameOverManager.onGameExit) {
+            this.gameOverManager.onGameExit();
+        }
+        
+        console.log('Player quit to main menu');
     }
 }
 
