@@ -713,34 +713,32 @@ export class GameState {
     async endRound(playerPower) {
         const statsDisplay = document.getElementById('stats-display');
 
-        // 1. Show Enemy Defense
+        // Calculate stats for both teams
         const enemyStats = CombatEngine.calculateTeamStats(this.fieldCards.enemy);
-        statsDisplay.innerHTML = `Enemy Defense<br>Rush: ${enemyStats.rushDefense} | Pass: ${enemyStats.passDefense}`;
-        statsDisplay.style.display = 'block';
-        this.highlightDefensiveCards(this.fieldCards.enemy, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightDefensiveCards(this.fieldCards.enemy, false);
-
-        // 2. Show Player Offense
         const playerStats = CombatEngine.calculateTeamStats(this.fieldCards.player);
-        statsDisplay.innerHTML = `Your Offense<br>Rush: ${playerStats.rushOffense} | Pass: ${playerStats.passOffense}`;
-        this.highlightOffensiveCards(this.fieldCards.player, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightOffensiveCards(this.fieldCards.player, false);
 
-        // 3. Show Player Defense
-        statsDisplay.innerHTML = `Your Defense<br>Rush: ${playerStats.rushDefense} | Pass: ${playerStats.passDefense}`;
-        this.highlightDefensiveCards(this.fieldCards.player, true);
-        await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightDefensiveCards(this.fieldCards.player, false);
+        // Update the stats table with all values
+        this.updateStatsTable(playerStats, enemyStats);
+        statsDisplay.style.display = 'block';
 
-        // 4. Show Enemy Offense
-        statsDisplay.innerHTML = `Enemy Offense<br>Rush: ${enemyStats.rushOffense} | Pass: ${enemyStats.passOffense}`;
-        this.highlightOffensiveCards(this.fieldCards.enemy, true);
+        // 1. Highlight Enemy Defense
+        this.highlightStatsAndCards('defense', 'enemy', this.fieldCards.enemy);
         await new Promise(resolve => setTimeout(resolve, 2000));
-        this.highlightOffensiveCards(this.fieldCards.enemy, false);
 
-        statsDisplay.style.display = 'none';
+        // 2. Highlight Player Offense
+        this.highlightStatsAndCards('offense', 'player', this.fieldCards.player);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 3. Highlight Player Defense
+        this.highlightStatsAndCards('defense', 'player', this.fieldCards.player);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // 4. Highlight Enemy Offense
+        this.highlightStatsAndCards('offense', 'enemy', this.fieldCards.enemy);
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Clear all highlights and keep table visible during combat
+        this.clearAllHighlights();
 
         // Use the new CombatEngine for all combat calculations
         const combatResult = CombatEngine.processCombatRound(
@@ -816,6 +814,9 @@ export class GameState {
         } else {
             // Continue game - start new round
             setTimeout(() => {
+                // Hide stats display for next round
+                document.getElementById('stats-display').style.display = 'none';
+                
                 this.clearField();
                 
                 this.hasDiscardedThisRound = false;
@@ -1119,6 +1120,68 @@ export class GameState {
                 this.hideGameLogModal();
             }
         });
+    }
+
+    updateStatsTable(playerStats, enemyStats) {
+        // Update all stat values in the table
+        document.getElementById('playerRushOff').textContent = playerStats.rushOffense;
+        document.getElementById('enemyRushOff').textContent = enemyStats.rushOffense;
+        document.getElementById('playerPassOff').textContent = playerStats.passOffense;
+        document.getElementById('enemyPassOff').textContent = enemyStats.passOffense;
+        document.getElementById('playerRushDef').textContent = playerStats.rushDefense;
+        document.getElementById('enemyRushDef').textContent = enemyStats.rushDefense;
+        document.getElementById('playerPassDef').textContent = playerStats.passDefense;
+        document.getElementById('enemyPassDef').textContent = enemyStats.passDefense;
+    }
+
+    highlightStatsAndCards(statType, team, cards) {
+        // Clear previous highlights
+        this.clearAllHighlights();
+
+        if (statType === 'offense') {
+            // Highlight offensive stats
+            if (team === 'player') {
+                document.getElementById('playerRushOff').classList.add('highlighted');
+                document.getElementById('playerPassOff').classList.add('highlighted');
+                this.highlightOffensiveCards(cards, true);
+            } else {
+                document.getElementById('enemyRushOff').classList.add('highlighted');
+                document.getElementById('enemyPassOff').classList.add('highlighted');
+                this.highlightOffensiveCards(cards, true);
+            }
+        } else {
+            // Highlight defensive stats
+            if (team === 'player') {
+                document.getElementById('playerRushDef').classList.add('highlighted');
+                document.getElementById('playerPassDef').classList.add('highlighted');
+                this.highlightDefensiveCards(cards, true);
+            } else {
+                document.getElementById('enemyRushDef').classList.add('highlighted');
+                document.getElementById('enemyPassDef').classList.add('highlighted');
+                this.highlightDefensiveCards(cards, true);
+            }
+        }
+    }
+
+    clearAllHighlights() {
+        // Clear stat highlights
+        const statElements = [
+            'playerRushOff', 'enemyRushOff', 'playerPassOff', 'enemyPassOff',
+            'playerRushDef', 'enemyRushDef', 'playerPassDef', 'enemyPassDef'
+        ];
+        
+        statElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.classList.remove('highlighted');
+            }
+        });
+
+        // Clear card highlights
+        this.highlightOffensiveCards(this.fieldCards.player, false);
+        this.highlightDefensiveCards(this.fieldCards.player, false);
+        this.highlightOffensiveCards(this.fieldCards.enemy, false);
+        this.highlightDefensiveCards(this.fieldCards.enemy, false);
     }
 }
 

@@ -893,23 +893,117 @@ body {
     }
 }
 
-/* Battle Sequence Stats Display */
-.stats-display {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
+/* Stats Display Table */
+.stats-display-table {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.stats-table-header {
     color: white;
-    padding: 20px 30px;
+    font-weight: bold;
     text-align: center;
-    font-size: clamp(1rem, 4vw, 1.5rem);
-    z-index: 101;
-    font-weight: 900;
+    margin-bottom: 8px;
+    font-size: clamp(0.9rem, 2.5vw, 1.1rem);
     text-transform: uppercase;
-    letter-spacing: 2px;
-    text-shadow: 
-        0 0 10px rgba(255, 255, 255, 0.8),
-        2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 1px;
+}
+
+.stats-table {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    width: 100%;
+}
+
+.stats-table-row {
+    display: contents;
+}
+
+.stats-header-row .stat-category {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    font-weight: bold;
+}
+
+.stat-player-header,
+.stat-enemy-header {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    padding: 4px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.stat-player-header {
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.stat-enemy-header {
+    background: rgba(244, 67, 54, 0.3);
+}
+
+.stat-category {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: bold;
+    font-size: clamp(0.7rem, 2vw, 0.8rem);
+    padding: 6px 4px;
+    text-align: left;
+}
+
+.stat-player-value,
+.stat-enemy-value {
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    padding: 6px 4px;
+    font-size: clamp(0.8rem, 2.2vw, 0.9rem);
+    border-radius: 4px;
+}
+
+.stat-player-value {
+    background: rgba(76, 175, 80, 0.2);
+}
+
+.stat-enemy-value {
+    background: rgba(244, 67, 54, 0.2);
+}
+
+/* Highlighting for active stats */
+.stat-player-value.highlighted,
+.stat-enemy-value.highlighted {
+    animation: statPulse 1s ease-in-out infinite alternate;
+    box-shadow: 0 0 12px rgba(255, 255, 255, 0.8);
+    border: 2px solid rgba(255, 255, 255, 0.9);
+}
+
+.stat-player-value.highlighted {
+    background: rgba(76, 175, 80, 0.8) !important;
+    color: #ffffff !important;
+    font-weight: 900;
+}
+
+.stat-enemy-value.highlighted {
+    background: rgba(244, 67, 54, 0.8) !important;
+    color: #ffffff !important;
+    font-weight: 900;
+}
+
+@keyframes statPulse {
+    from { 
+        opacity: 0.9; 
+        transform: scale(1);
+        box-shadow: 0 0 12px rgba(255, 255, 255, 0.6);
+    }
+    to { 
+        opacity: 1; 
+        transform: scale(1.08);
+        box-shadow: 0 0 20px rgba(255, 255, 255, 1);
+    }
 }
 
 
