@@ -147,34 +147,47 @@ class NFLCardBattleApp {
     }
 
     handlePlayAgain(playerWon) {
+        console.log(`🎮 handlePlayAgain called with playerWon: ${playerWon}`);
+        
         const mapScreen = this.screenManager.screens.get(SCREENS.GAME_MAP);
         const currentBattle = this.screenManager.getCurrentBattle();
+        
+        console.log(`🎮 Map screen found:`, !!mapScreen);
+        console.log(`🎮 Current battle:`, currentBattle);
         
         if (mapScreen && currentBattle) {
             if (playerWon) {
                 // Check if this was the Super Bowl (final battle)
                 const isFinalBattle = currentBattle.id === 'superbowl';
+                console.log(`🎮 Is final battle (Super Bowl):`, isFinalBattle);
                 
                 if (isFinalBattle) {
                     // Player won Super Bowl - show celebration then reset for new season
+                    console.log(`🏆 Calling mapScreen.onBattleCompleted for Super Bowl victory`);
                     mapScreen.onBattleCompleted(currentBattle.id, true); // This shows celebration
                     setTimeout(() => {
+                        console.log(`🏆 Resetting progression after Super Bowl celebration`);
                         mapScreen.resetProgression(); // Reset after brief celebration
                     }, 2000);
                     console.log(`Player won Super Bowl - championship celebration then new season`);
                 } else {
                     // Regular battle win - advance to next battle
+                    console.log(`✅ Calling mapScreen.onBattleCompleted for regular battle victory: ${currentBattle.id}`);
                     mapScreen.onBattleCompleted(currentBattle.id, true);
-                    console.log(`Player won battle ${currentBattle.id} - next battle unlocked`);
+                    console.log(`Player won battle ${currentBattle.id} - next battle should be unlocked`);
                 }
             } else {
                 // Player lost - reset progression back to game 1
+                console.log(`❌ Calling mapScreen.resetProgression for loss`);
                 mapScreen.resetProgression();
                 console.log(`Player lost battle ${currentBattle.id} - progression reset to game 1`);
             }
+        } else {
+            console.error(`🚨 Missing required objects: mapScreen=${!!mapScreen}, currentBattle=${!!currentBattle}`);
         }
         
         // Return to game map
+        console.log(`🎮 Returning to game map screen`);
         this.screenManager.showScreen(SCREENS.GAME_MAP);
         console.log('Player chose to play again - returning to game map');
     }

@@ -359,7 +359,7 @@ export class GeneralDraftScreen {
 
     renderDraftedDeck(container) {
         container.innerHTML = '';
-        container.style.maxHeight = '60vh';
+        container.style.maxHeight = '40vh';
         container.style.overflowY = 'auto';
         
         // Group cards by source (team vs general draft)

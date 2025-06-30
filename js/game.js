@@ -755,12 +755,12 @@ export class GameState {
         this.playerYards = combatResult.newPlayerYards;
         this.enemyYards = combatResult.newEnemyYards;
 
-        // Update health bars with the actual change
+        // Update health bars with the new absolute values
         if (this.playerYardsBar) {
-            this.playerYardsBar.add(combatResult.actualPlayerChange);
+            this.playerYardsBar.setHealth(this.playerYards);
         }
         if (this.enemyYardsBar) {
-            this.enemyYardsBar.add(combatResult.actualEnemyChange);
+            this.enemyYardsBar.setHealth(this.enemyYards);
         }
         
         this.updateUI();

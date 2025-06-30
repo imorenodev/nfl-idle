@@ -288,8 +288,8 @@
 }
 
 .draft-choices {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    display: flex;
+    /* grid-template-columns: repeat(3, 1fr); */
     gap: min(8px, 1.5vw);
     margin-bottom: 30px;
     align-content: start;
@@ -547,8 +547,8 @@
     }
     
     .draft-choices {
-        grid-template-columns: repeat(3, 1fr);
-        gap: min(8px, 1.5vw);
+        /* grid-template-columns: repeat(3, 1fr);
+        gap: min(8px, 1.5vw); */
     }
     
     .deck-cards-grid {
